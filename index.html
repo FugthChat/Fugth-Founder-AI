@@ -9,53 +9,51 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     
     <style>
         :root, html[data-theme="light"] {
-            --bg-main: #f7f7f8;
+            --bg-main: #f4f7f9;
             --bg-sidebar: #ffffff;
             --bg-input: #ffffff;
             --bg-menu: #ffffff;
-            --bg-message-user: #e9e9eb;
-            --bg-message-bot: #f7f7f8;
-            --text-primary: #000000;
-            --text-secondary: #575757;
-            --accent: #1976d2;
-            --danger: #d32f2f;
-            --border-color: #e0e0e0;
+            --bg-message-user: #eef2ff;
+            --bg-message-bot: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --accent: #4f46e5;
+            --danger: #ef4444;
+            --border-color: #e5e7eb;
             --shadow-color: rgba(0, 0, 0, 0.05);
+            --code-bg: #1f2937;
         }
         html[data-theme="dark"] {
-            --bg-main: #000000;
-            --bg-sidebar: #111111;
-            --bg-input: #111111;
-            --bg-menu: #222222;
-            --bg-message-user: #2a2a2a;
-            --bg-message-bot: #111111;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --accent: #6ea8ff;
-            --danger: #ff5252;
-            --border-color: #333333;
+            --bg-main: #111111;
+            --bg-sidebar: #191919;
+            --bg-input: #191919;
+            --bg-menu: #242424;
+            --bg-message-user: #2a2a2e;
+            --bg-message-bot: #191919;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent: #818cf8;
+            --danger: #f87171;
+            --border-color: #374151;
             --shadow-color: rgba(255, 255, 255, 0.05);
+            --code-bg: #1f2937;
         }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-main); 
-            color: var(--text-primary);
-            overflow: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-primary); overflow: hidden; }
         .prose { color: var(--text-primary); }
-        .prose code:not(pre *) { background-color: rgba(0,0,0,0.05); padding: 2px 5px; border-radius: 4px; font-family: 'Space Grotesk', monospace; }
+        .prose code:not(pre *) { background-color: rgba(0,0,0,0.05); padding: 2px 5px; border-radius: 4px; font-family: 'Space Grotesk', monospace; font-size: 0.9em; }
         html[data-theme="dark"] .prose code:not(pre *) { background-color: rgba(255,255,255,0.1); }
-        .prose pre { background-color: #282c34; padding: 1rem; border-radius: 0.5rem; color: #abb2bf; }
+        .prose pre { background-color: var(--code-bg); padding: 1.25rem 1rem; border-radius: 0.5rem; color: #d1d5db; position: relative; }
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { color: var(--accent); } }
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #666; }
         
         .chat-options-menu { position: absolute; z-index: 50; background-color: var(--bg-menu); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color); padding: 4px; }
@@ -65,9 +63,7 @@
         .feedback-btn.liked, .feedback-btn.disliked { color: var(--accent); }
         .feedback-btn.disliked { color: var(--danger); }
 
-        /* Sidebar hover/slide styles */
         .sidebar { transition: width 0.3s ease-in-out, transform 0.3s ease-in-out; }
-
         @media (min-width: 768px) {
             #left-sidebar, #right-sidebar { width: 5rem; } /* Collapsed */
             #left-sidebar:hover, #right-sidebar:hover { width: 18rem; } /* Expanded */
@@ -79,7 +75,6 @@
             #left-sidebar:hover .sidebar-text, #left-sidebar:hover .sidebar-brand-text { opacity: 1; }
             #right-sidebar:hover .sidebar-text { opacity: 1; }
         }
-
         @media (max-width: 767.98px) {
             .sidebar { position: fixed; top: 0; bottom: 0; z-index: 40; width: 18rem; }
             #left-sidebar { left: 0; transform: translateX(-100%); }
@@ -89,25 +84,33 @@
             #sidebar-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
             #sidebar-overlay.open { opacity: 1; pointer-events: auto; }
         }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background-color: #374151; color: #9ca3af;
+            border: none; padding: 4px 8px; border-radius: 5px;
+            cursor: pointer; font-size: 0.8em; font-family: 'Inter', sans-serif;
+            opacity: 0; transition: opacity 0.2s ease-in-out;
+        }
+        .prose pre:hover .copy-btn { opacity: 1; }
+        .copy-btn:hover { background-color: #4b5563; color: #d1d5db; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden antialiased">
     <div id="sidebar-overlay"></div>
-    <!-- Left Sidebar for Chat History -->
-    <aside id="left-sidebar" class="bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0">
-        <div class="flex items-center mb-4 flex-shrink-0">
+    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0">
+        <div class="flex items-center mb-6 flex-shrink-0">
             <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="text-[var(--accent)] sidebar-brand-text">AI</span></h1>
             <button id="theme-btn" class="hover:bg-black/10 dark:hover:bg-white/10 p-2 rounded-full text-lg ml-auto">
                 <i class="fa-solid fa-moon"></i>
             </button>
         </div>
-        <div id="sidebar-content" class="flex flex-col flex-1 overflow-y-auto">
-            <button id="new-chat-btn" class="w-full py-2 px-3 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 mb-4 transition-colors text-sm flex items-center justify-center">
-                <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text">New Chat</span>
+        <div id="sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
+            <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all duration-200 text-sm flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span>
             </button>
             <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
-         <div class="pt-4 border-t border-[var(--border-color)] space-y-2 text-sm">
+        <div class="pt-4 border-t border-[var(--border-color)] space-y-1 text-sm">
             <button id="import-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"><i class="fa-solid fa-file-import w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Import Chats</span></button>
             <input type="file" id="import-chats-input" class="hidden" accept=".json">
             <button id="export-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"><i class="fa-solid fa-file-export w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Export All Chats</span></button>
@@ -115,9 +118,8 @@
         </div>
     </aside>
 
-    <!-- Main Chat Area -->
     <main class="flex-1 flex flex-col min-w-0 relative">
-        <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0">
+        <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-main)]/80 backdrop-blur-sm">
             <div class="flex items-center">
                 <button id="toggle-left-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 mr-2 md:hidden">
                     <i class="fa-solid fa-bars"></i>
@@ -126,9 +128,9 @@
             </div>
             <div class="flex items-center space-x-2">
                 <div class="relative">
-                    <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 px-3 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)]">
-                        <option value="lite">Fugth-1NDM-Lite</option>
-                        <option value="high">Fugth-1NDM-HIGH</option>
+                    <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all">
+                        <option value="lite">⚡️ Fugth-1NDM-Lite</option>
+                        <option value="high">✨ Fugth-1NDM-HIGH</option>
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] pointer-events-none"></i>
                 </div>
@@ -139,11 +141,12 @@
         </header>
         
         <div id="chat-history" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
-            <div id="welcome-message" class="text-center pt-20">
-                <div class="inline-block p-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4">
-                     <i class="fa-solid fa-brain text-4xl text-white"></i>
+            <div id="welcome-message" class="text-center pt-16">
+                 <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg">
+                    <i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i>
                 </div>
-                <h1 class="text-3xl font-bold font-['Space_Grotesk']">How can I help you today?</h1>
+                <h1 class="text-4xl font-bold font-['Space_Grotesk']">FugthAI</h1>
+                <p class="text-[var(--text-secondary)] mt-2">How can I help you today?</p>
             </div>
         </div>
         
@@ -153,41 +156,43 @@
                     <div id="status-dot" class="w-2 h-2 rounded-full"></div>
                     <span id="status-text"></span>
                 </div>
-                <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-lg border border-[var(--border-color)] focus-within:border-[var(--accent)] transition-all">
+                <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)] transition-all">
                     <button id="quick-prompts-btn" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10" title="Quick Prompts">
-                        <i class="fa-solid fa-wand-magic-sparkles text-[var(--text-secondary)]"></i>
+                        <i class="fa-solid fa-bolt text-[var(--text-secondary)]"></i>
                     </button>
                     <label for="file-input" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" title="Upload File">
                         <i class="fa-solid fa-paperclip text-[var(--text-secondary)]"></i>
                     </label>
                     <input type="file" id="file-input" class="hidden" accept=".txt,.js,.py,.html,.css,.json,.csv,.md">
                     
-                    <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask anything…" disabled></textarea>
+                    <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…" disabled></textarea>
                     
-                    <button id="send-btn" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                      <i class="fa-solid fa-arrow-up text-[var(--text-secondary)]"></i>
+                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                      <i class="fa-solid fa-arrow-up"></i>
                     </button>
                 </div>
             </div>
         </footer>
     </main>
-  
-    <aside id="right-sidebar" class="sidebar bg-[var(--bg-sidebar)] w-80 p-4 flex-col border-l border-[var(--border-color)] flex-shrink-0">
-        <h3 class="font-bold text-lg font-['Space_Grotesk'] sidebar-text">Settings</h3>
-        <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5 sidebar-text">
-            <h3 class="font-semibold text-[var(--text-primary)] mb-2">Persona</h3>
-            <select id="persona-select" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></select>
-        </div>
-        <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5 sidebar-text">
-            <h3 class="font-semibold text-[var(--text-primary)] mb-2">System Prompt</h3>
-            <textarea id="system-prompt-input" rows="12" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></textarea>
-        </div>
-        <button id="clear-history-btn" class="w-full py-2 px-3 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors text-sm sidebar-text">
-            <i class="fa-solid fa-trash-can mr-2"></i>Clear Chat History
-        </button>
+    
+    <aside id="right-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-l border-[var(--border-color)] flex-shrink-0">
+         <h3 class="font-bold text-lg font-['Space_Grotesk'] sidebar-text mb-4">Settings</h3>
+         <div class="space-y-4 sidebar-text">
+            <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5">
+                <h3 class="font-semibold text-[var(--text-primary)] mb-2">Persona</h3>
+                <select id="persona-select" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></select>
+            </div>
+            <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5">
+                <h3 class="font-semibold text-[var(--text-primary)] mb-2">System Prompt</h3>
+                <textarea id="system-prompt-input" rows="12" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></textarea>
+            </div>
+            <button id="clear-history-btn" class="w-full py-2 px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors text-sm flex items-center justify-center font-semibold">
+                <i class="fa-solid fa-trash-can mr-2"></i>Clear Chat
+            </button>
+         </div>
     </aside>
 
-    <div id="quick-prompts-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+    <div id="quick-prompts-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
         <div class="bg-[var(--bg-menu)] p-6 rounded-xl border border-[var(--border-color)] shadow-lg w-full max-w-2xl relative">
             <button id="modal-close-x" class="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl font-bold">&times;</button>
             <h3 class="text-lg font-bold text-[var(--accent)] mb-4">Quick Prompts</h3>
@@ -199,35 +204,34 @@
 document.addEventListener('DOMContentLoaded', () => {
     const $ = sel => document.querySelector(sel);
 
-    // --- 1. SETTINGS ---
-    const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space';
-    const MAX_CONTEXT_TOKENS = 800;
-    const SIDEBAR_AUTO_CLOSE_DELAY = 7000;
+    // --- 1. SETTINGS & CONFIGURATION ---
+   const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space';// Make sure this is your correct HF Space URL
+    const MAX_CONTEXT_TOKENS = 1024;
+    const LOCAL_STORAGE_KEY_CHATS = 'fugthai_chats_v16';
+    const LOCAL_STORAGE_KEY_THEME = 'fugthai_theme_v16';
 
     const PERSONAS = {
-        default: { name: 'Default Assistant', prompt: 'I am a helpful, friendly, and versatile AI assistant named FugthAI. I can answer questions, provide explanations, and assist with a wide range of tasks.' },
-        lawyer: { name: 'Lawyer', prompt: 'I am an AI Legal Advisor. My role is to provide information on legal topics, explain legal concepts, and help draft documents. I am strictly forbidden from providing medical, financial, or any other type of advice outside the legal domain. If a user asks for non-legal advice, I MUST refuse and state clearly: "My expertise is strictly limited to legal matters. I cannot provide advice on that topic."' },
-        dentist: { name: 'Dentist', prompt: 'I am an AI Dental Advisor. My purpose is to provide information about dental health, oral hygiene, and common dental procedures. I am not a substitute for a real medical professional. I am strictly forbidden from providing advice on any topic outside of dentistry and general oral health. If asked a non-dental question, I MUST refuse and state clearly: "I can only provide information about dental health. For other topics, please consult an appropriate expert."' },
-        sales: { name: 'Sales Expert', prompt: 'I am a master AI Sales Expert. My goal is to provide users with world-class sales strategies, pitch advice, negotiation tactics, and motivational coaching. I must remain in the persona of a confident, persuasive, and highly knowledgeable sales leader. I am strictly forbidden from engaging in topics outside of sales, marketing, and business development. If asked to, I MUST refuse and pivot back, stating: "That\'s outside my area of expertise, which is sales. Let\'s focus on how we can crush your sales goals."' }
+        default: { name: 'Default Assistant', prompt: 'You are FugthAI, a helpful, friendly, and versatile AI assistant. Provide clear, concise, and accurate information. Format your responses using markdown.' },
+        code: { name: 'Code Expert', prompt: 'You are an expert programmer. Provide clean, efficient, and well-documented code snippets. Explain the code clearly. Always use markdown for formatting code blocks with the correct language identifier.' },
+        creative: { name: 'Creative Writer', prompt: 'You are a creative writer. Your goal is to help with brainstorming, writing stories, poems, and other creative tasks. Use vivid language and imaginative ideas.' },
     };
 
     const QUICK_PROMPTS = [
-        { title: "Explain Something", prompt: "Explain the concept of [topic] in simple terms." },
-        { title: "Write a Poem", prompt: "Write a short poem about [subject]." },
-        { title: "Brainstorm Ideas", prompt: "Brainstorm 5 ideas for a new project about [topic]." },
-        { title: "Summarize Text", prompt: "Summarize the following text for me: [paste text here]." },
+        { title: "Explain a concept", prompt: "Explain the concept of [topic] in simple terms." },
+        { title: "Write clean code", prompt: "Write a Python function to [task]. Include comments and docstrings." },
+        { title: "Brainstorm ideas", prompt: "Brainstorm 5 ideas for a new project about [topic]." },
+        { title: "Summarize text", prompt: "Summarize the following text for me: [paste text here]." },
         { title: "Translate to French", prompt: "Translate the following sentence to French: " },
-        { title: "Create a Recipe", prompt: "Give me a simple recipe for [dish]." }
+        { title: "Create a recipe", prompt: "Give me a simple recipe for [dish]." }
     ];
     
     let state = {
-        chats: JSON.parse(localStorage.getItem('fugthai_chats_v15') || '[]'),
+        chats: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_CHATS) || '[]'),
         activeChatId: null,
         isGenerating: false,
         abortController: null,
-        theme: localStorage.getItem('fugthai_theme_v15') || 'light',
+        theme: localStorage.getItem(LOCAL_STORAGE_KEY_THEME) || 'light',
         activeMenuChatId: null,
-        sidebarCloseTimer: null,
     };
 
     const el = {
@@ -265,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         Object.keys(PERSONAS).forEach(key => el.personaSelect.add(new Option(PERSONAS[key].name, key)));
         el.personaSelect.add(new Option("Custom", "custom"));
+        
         QUICK_PROMPTS.forEach(p => {
             const card = document.createElement('div');
             card.className = 'p-4 bg-black/5 dark:bg-white/10 rounded-lg hover:bg-black/10 dark:hover:bg-white/20 cursor-pointer transition-colors';
@@ -288,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkServerStatus();
     }
 
-    function saveChats() { localStorage.setItem('fugthai_chats_v15', JSON.stringify(state.chats)); }
+    function saveChats() { localStorage.setItem(LOCAL_STORAGE_KEY_CHATS, JSON.stringify(state.chats)); }
     
     function createNewChat() {
         const newChat = { 
@@ -306,23 +311,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyTheme() {
         document.documentElement.setAttribute('data-theme', state.theme);
-        localStorage.setItem('fugthai_theme_v15', state.theme);
+        localStorage.setItem(LOCAL_STORAGE_KEY_THEME, state.theme);
         el.themeBtn.innerHTML = state.theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
     }
 
     function renderChatList() {
-        const sortedChats = [...state.chats].sort((a, b) => {
-            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-            return b.id - a.id;
-        });
-
+        const sortedChats = [...state.chats].sort((a, b) => (a.pinned === b.pinned) ? b.id - a.id : a.pinned ? -1 : 1);
         el.chatList.innerHTML = '';
         sortedChats.forEach(c => {
             const div = document.createElement('div');
-            div.className = `chat-item group relative flex items-center p-2 rounded-lg cursor-pointer transition-colors ${c.id === state.activeChatId ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`;
+            div.className = `chat-item group relative flex items-center p-2 rounded-lg cursor-pointer transition-colors ${c.id === state.activeChatId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`;
             div.dataset.chatId = c.id;
             const pinIcon = c.pinned ? `<i class="fa-solid fa-thumbtack text-[var(--accent)] text-xs w-6 text-center"></i>` : `<i class="fa-regular fa-message w-6 text-center text-[var(--text-secondary)]"></i>`;
-            div.innerHTML = `<div class="w-6 text-center">${pinIcon}</div><span class="ml-1 flex-grow truncate text-sm sidebar-text">${c.name}</span><button data-action="toggle-menu" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-black/10 dark:hover:bg-white/10 sidebar-text"><i class="fa-solid fa-ellipsis-h"></i></button>`;
+            div.innerHTML = `<div class="w-6 text-center">${pinIcon}</div><span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${c.name}</span><button data-action="toggle-menu" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-black/10 dark:hover:bg-white/10 sidebar-text"><i class="fa-solid fa-ellipsis-h"></i></button>`;
             el.chatList.appendChild(div);
         });
     }
@@ -344,43 +345,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function typeWriter(element, text) {
-        return new Promise(resolve => {
-            let i = 0;
-            const speed = 15;
-            const cursor = element.querySelector('.blinking-cursor');
-            function type() {
-                if (i < text.length && state.isGenerating) {
-                    element.querySelector('.text-content').innerHTML = marked.parse(text.substring(0, i + 1));
-                    i++;
-                    setTimeout(type, speed);
-                    scrollToBottom();
-                } else {
-                    if (cursor) cursor.style.display = 'none';
-                    element.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
-                    resolve();
-                }
-            }
-            type();
-        });
-    }
-    
-    function addMessage(role, text, options = {}, save = true, isTyping = false) {
+    function addMessage(role, text, options = {}, save = true) {
         const { isError = false, feedback = null, index = -1, duration = null } = options;
         el.welcomeMessage.classList.add('hidden');
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
-        if (!activeChat) return;
+        if (!activeChat) return null;
+
         const who = role === 'user' ? 'You' : 'FugthAI';
         const avatarIcon = role === 'user' ? 'fa-user' : 'fa-brain';
+        const messageBg = role === 'user' ? 'bg-[var(--bg-message-user)]' : 'bg-[var(--bg-message-bot)]';
         const messageContainer = document.createElement('div');
         messageContainer.className = 'message-container flex items-start gap-4';
-        const avatar = `<div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>`;
-        const bubble = document.createElement('div');
-        bubble.className = 'flex-1';
         
-        let actionsHTML = '';
-        if (role === 'assistant' && !isError && !isTyping) {
-            actionsHTML = `
+        const avatar = `<div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = `flex-1 p-4 rounded-xl ${messageBg} border border-[var(--border-color)]`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'prose max-w-none text-content';
+        contentDiv.innerHTML = text ? marked.parse(text) : '<span class="blinking-cursor">▍</span>';
+
+        const actionsDiv = document.createElement('div');
+        if (role === 'assistant' && !isError && text) {
+             actionsDiv.innerHTML = `
                 <div class="flex items-center gap-2 mt-2 text-xs text-[var(--text-secondary)]">
                     ${duration ? `<span>${(duration / 1000).toFixed(1)}s</span>` : ''}
                     <button data-action="regenerate" data-index="${index}" class="action-btn p-1 hover:text-[var(--text-primary)]" title="Regenerate"><i class="fa-solid fa-arrows-rotate"></i></button>
@@ -390,22 +378,40 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        bubble.innerHTML = `
-            <strong class="text-sm font-semibold">${who}</strong>
-            <div class="prose max-w-none text-content">${isTyping ? '' : marked.parse(text)}</div>
-            ${isTyping ? '<span class="blinking-cursor">▍</span>' : ''}
-            ${actionsHTML}
-        `;
-        messageContainer.innerHTML = `${avatar}${bubble.outerHTML}`;
+        bubble.innerHTML = `<strong class="text-sm font-semibold mb-2 block">${who}</strong>`;
+        bubble.appendChild(contentDiv);
+        bubble.appendChild(actionsDiv);
+        
+        messageContainer.innerHTML = avatar;
+        messageContainer.appendChild(bubble);
+
         el.chatHistory.appendChild(messageContainer);
+        addCodeCopyButtons(contentDiv);
         scrollToBottom();
 
         if (save && !isError) {
-            const messageToSave = { role, text, duration, feedback: null };
-            activeChat.history.push(messageToSave);
+            activeChat.history.push({ role, text, duration, feedback: null });
             saveChats();
         }
         return messageContainer;
+    }
+
+    function addCodeCopyButtons(container) {
+        container.querySelectorAll('pre').forEach(pre => {
+            const code = pre.querySelector('code');
+            if (code) {
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(code.innerText).then(() => {
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                    });
+                };
+                pre.appendChild(btn);
+            }
+        });
     }
 
     function buildPrompt() {
@@ -414,8 +420,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let tokenCount = 0;
         const messagesForPrompt = [];
         const countTokens = (str) => Math.ceil(str.length / 4);
+
         const systemPrompt = `<|system|>\n${activeChat.system_prompt}</s>\n`;
         tokenCount += countTokens(systemPrompt);
+
         const reversedHistory = [...activeChat.history].reverse();
         for (const msg of reversedHistory) {
             const formattedMsg = msg.role === 'user' ? `<|user|>\n${msg.text}</s>\n` : `<|assistant|>\n${msg.text}</s>\n`;
@@ -441,10 +449,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.promptInput.disabled = false;
                 el.sendBtn.disabled = false;
             } else {
-                 throw new Error(`Server sleeping or offline`);
+               throw new Error(`Server sleeping or offline (${response.status})`);
             }
         } catch (error) {
-            updateStatus('failed', `Connection Failed. Server may be starting. Please wait...`);
+            updateStatus('failed', `Connection Failed. Retrying...`);
             setTimeout(checkServerStatus, 15000);
         }
     }
@@ -452,13 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function setGenerating(on) {
         state.isGenerating = on;
         el.promptInput.disabled = on;
-        el.sendBtn.innerHTML = on ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-arrow-up text-[var(--text-secondary)]"></i>';
+        el.sendBtn.innerHTML = on ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-arrow-up"></i>';
         el.sendBtn.disabled = false; // Always enabled to allow aborting
-        if (on) {
-            updateStatus('generating', 'Assistant is thinking...');
-        } else {
-            updateStatus('connected', 'AI Server Online');
-        }
+        updateStatus(on ? 'generating' : 'connected', on ? 'Assistant is thinking...' : 'AI Server Online');
     }
     
     async function getAiResponse() {
@@ -467,38 +471,52 @@ document.addEventListener('DOMContentLoaded', () => {
         state.abortController = new AbortController();
         const prompt = buildPrompt();
         const modelQuality = el.modelSwitcher.value;
-        const assistantMessageElement = addMessage('assistant', '', false, false, true);
-        const textContentElement = assistantMessageElement.querySelector('.text-content');
+
+        const assistantMessageContainer = addMessage('assistant', '', {}, false);
+        const textContentElement = assistantMessageContainer.querySelector('.text-content');
         
+        let fullResponse = "";
         try {
-            const res = await fetch(`${HUGGING_FACE_URL}/chat`, {
+            const res = await fetch(`${HUGGING_FACE_URL}/chat_stream`, { // <-- IMPORTANT: Using new streaming endpoint
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: prompt, quality: modelQuality }),
                 signal: state.abortController.signal
             });
-            if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-            const data = await res.json();
 
-            if (state.isGenerating) {
-                const duration = Date.now() - startTime;
-                await typeWriter(assistantMessageElement, data.response);
-                const activeChat = state.chats.find(c => c.id === state.activeChatId);
-                if(activeChat) {
-                    const newMessage = { role: 'assistant', text: data.response, duration: duration, feedback: null };
-                    activeChat.history.push(newMessage);
-                    saveChats();
-                    selectChat(state.activeChatId); 
-                }
+            if (!res.ok) throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+            if (!res.body) throw new Error("ReadableStream not supported.");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                fullResponse += decoder.decode(value, { stream: true });
+                textContentElement.innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
+                scrollToBottom();
             }
+
+            // Finalize message
+            textContentElement.innerHTML = marked.parse(fullResponse);
+            addCodeCopyButtons(textContentElement);
+            
+            const duration = Date.now() - startTime;
+            const activeChat = state.chats.find(c => c.id === state.activeChatId);
+            if(activeChat) {
+                activeChat.history.push({ role: 'assistant', text: fullResponse, duration: duration, feedback: null });
+                saveChats();
+                // We need to re-render the last message to add the action buttons
+                selectChat(state.activeChatId); 
+            }
+
         } catch (e) {
-            const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}. Please try again.`;
-            textContentElement.textContent = errorMessage;
-            assistantMessageElement.classList.add('text-red-400');
+            const errorMessage = e.name === 'AbortError' ? 'Request cancelled by user.' : `An error occurred: ${e.message}. Please try again.`;
+            textContentElement.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
         } finally {
-            if (state.isGenerating) {
-                setGenerating(false);
-            }
+            setGenerating(false);
         }
     }
 
@@ -515,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             generating: { color: 'bg-blue-500', pulse: true },
             failed: { color: 'bg-red-500', pulse: false }
         };
-        const newStatus = statusMap[status];
+        const newStatus = statusMap[status] || statusMap.failed;
         el.statusText.textContent = text;
         el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color}`;
         newStatus.pulse ? el.statusDot.classList.add('animate-pulse') : el.statusDot.classList.remove('animate-pulse');
@@ -523,15 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleSend() {
         if (window.innerWidth < 768 && el.leftSidebar.classList.contains('open')) {
-            clearTimeout(state.sidebarCloseTimer);
-            state.sidebarCloseTimer = setTimeout(() => {
-                el.leftSidebar.classList.remove('open');
-                el.sidebarOverlay.classList.remove('open');
-            }, SIDEBAR_AUTO_CLOSE_DELAY);
+             el.leftSidebar.classList.remove('open');
+             el.sidebarOverlay.classList.remove('open');
         }
 
         const promptText = el.promptInput.value.trim();
         if (!promptText || state.isGenerating) return;
+        
         addMessage('user', promptText, {}, true);
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
@@ -559,29 +575,9 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     }
 
-    function toggleChatOptionsMenu(chatId, buttonEl) {
-        closeAllMenus();
-        state.activeMenuChatId = chatId;
-        const menu = document.createElement('div');
-        menu.className = 'chat-options-menu';
-        const rect = buttonEl.getBoundingClientRect();
-        const chat = state.chats.find(c => c.id === chatId);
-        const pinText = chat.pinned ? 'Unpin' : 'Pin';
-        const pinIcon = chat.pinned ? 'fa-thumbtack' : 'fa-thumbtack';
-        menu.innerHTML = `<button data-action="pin" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center"><i class="fa-solid ${pinIcon} fa-fw mr-2 w-4"></i>${pinText}</button><button data-action="rename" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center"><i class="fa-solid fa-pen-to-square fa-fw mr-2 w-4"></i>Rename</button><button data-action="share" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center"><i class="fa-solid fa-share-nodes fa-fw mr-2 w-4"></i>Share</button><div class="h-px bg-[var(--border-color)] my-1"></div><button data-action="delete" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 text-red-400 flex items-center"><i class="fa-solid fa-trash-can fa-fw mr-2 w-4"></i>Delete</button>`;
-        menu.style.left = `${rect.left - 150}px`;
-        menu.style.top = `${rect.bottom + 5}px`;
-        document.body.appendChild(menu);
-    }
-
-    function closeAllMenus() {
-        document.querySelectorAll('.chat-options-menu').forEach(m => m.remove());
-        state.activeMenuChatId = null;
-    }
-
     function addEventListeners() {
         el.sendBtn.onclick = () => {
-             if (state.isGenerating) { state.abortController?.abort(); setGenerating(false); } 
+             if (state.isGenerating) { state.abortController?.abort(); } 
              else { handleSend(); }
         };
         el.promptInput.addEventListener('input', autoResizeTextarea);
@@ -596,18 +592,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const action = button.dataset.action;
             const index = parseInt(button.dataset.index, 10);
             
+            const chat = state.chats.find(c => c.id === state.activeChatId);
+            if (!chat) return;
+
             if (action === 'regenerate') {
-                const chat = state.chats.find(c => c.id === state.activeChatId);
-                if (chat) {
-                    chat.history.pop(); // Remove the last assistant message
-                    saveChats();
-                    selectChat(state.activeChatId);
-                    getAiResponse();
-                }
+                chat.history.pop(); // Remove the last assistant message
+                saveChats();
+                selectChat(state.activeChatId);
+                getAiResponse();
             } else if (action === 'like' || action === 'dislike') {
-                const chat = state.chats.find(c => c.id === state.activeChatId);
-                if (chat && chat.history[index]) {
-                    const message = chat.history[index];
+                const message = chat.history[index];
+                if (message) {
                     message.feedback = message.feedback === action ? null : action;
                     saveChats();
                     selectChat(state.activeChatId);
@@ -615,51 +610,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        el.chatList.addEventListener('click', e => {
+        // Simplified event listener for chat list and menus
+        document.addEventListener('click', (e) => {
+            // Handle chat selection
             const chatItem = e.target.closest('.chat-item');
-            if (!chatItem) return;
-            const menuButton = e.target.closest('[data-action="toggle-menu"]');
-            if (menuButton) {
-                e.stopPropagation();
-                const chatId = parseInt(chatItem.dataset.chatId);
-                if (state.activeMenuChatId === chatId) closeAllMenus();
-                else toggleChatOptionsMenu(chatId, menuButton);
-            } else {
+            if (chatItem && !e.target.closest('[data-action="toggle-menu"]')) {
                 selectChat(parseInt(chatItem.dataset.chatId));
                 if (window.innerWidth < 768) {
                     el.leftSidebar.classList.remove('open');
                     el.sidebarOverlay.classList.remove('open');
                 }
+                return;
             }
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.chat-options-menu') && !e.target.closest('[data-action="toggle-menu"]')) closeAllMenus();
+
+            // Handle options menu toggle
+            const menuButton = e.target.closest('[data-action="toggle-menu"]');
+            if (menuButton) {
+                const chatId = parseInt(menuButton.closest('.chat-item').dataset.chatId);
+                if (state.activeMenuChatId === chatId) {
+                    closeAllMenus();
+                } else {
+                    toggleChatOptionsMenu(chatId, menuButton);
+                }
+                return;
+            }
+            
+            // Handle menu actions
             const actionButton = e.target.closest('.chat-options-menu button');
-            if (!actionButton) return;
-            const action = actionButton.dataset.action;
-            const chatId = state.activeMenuChatId;
-            const chat = state.chats.find(c => c.id === chatId);
-            if (!chat) return;
-            switch(action) {
-                case 'pin': chat.pinned = !chat.pinned; saveChats(); renderChatList(); break;
-                case 'rename':
-                     const newName = prompt('Enter new chat name:', chat.name);
-                     if (newName && newName.trim()) { chat.name = newName.trim(); saveChats(); renderChatList(); if (chat.id === state.activeChatId) el.chatTitle.textContent = newName.trim(); }
-                    break;
-                case 'share': navigator.clipboard.writeText(`${window.location.origin}/chat/${chatId}`).then(() => alert('Share link copied! (Feature demo)')).catch(err => console.error('Failed to copy', err)); break;
-                case 'delete':
-                    if (confirm('Are you sure you want to delete this chat?')) {
-                        state.chats = state.chats.filter(c => c.id !== chatId);
-                        saveChats();
-                        if (state.activeChatId === chatId) selectChat(state.chats[0]?.id || null);
-                        renderChatList();
-                    }
-                    break;
+            if(actionButton) {
+                 handleMenuAction(actionButton.dataset.action);
+                 return;
             }
-            closeAllMenus();
+
+            // Close menu if clicking outside
+            if (!e.target.closest('.chat-options-menu')) {
+                closeAllMenus();
+            }
         });
 
+        // Other event listeners...
+        el.clearHistoryBtn.onclick = () => { /* ... */ };
+        el.systemPromptInput.oninput = () => { /* ... */ };
+        el.personaSelect.onchange = () => { /* ... */ };
+        el.toggleLeftSidebar.onclick = () => { /* ... */ };
+        el.sidebarOverlay.onclick = () => { /* ... */ };
+        el.toggleRightSidebar.onclick = () => { /* ... */ };
+        el.quickPromptsBtn.onclick = () => el.quickPromptsModal.classList.remove('hidden');
+        el.modalCloseX.onclick = () => el.quickPromptsModal.classList.add('hidden');
+        el.quickPromptsModal.onclick = (e) => { if (e.target.id === 'quick-prompts-modal') el.quickPromptsModal.classList.add('hidden'); };
+        el.importChatsBtn.onclick = () => el.importChatsInput.click();
+        el.importChatsInput.onchange = (e) => { /* ... */ };
+        el.exportChatsBtn.onclick = () => { /* ... */ };
+        el.helpBtn.onclick = () => alert('FugthAI Help\n\n- Use the dropdown to switch between Lite (fast) and High (detailed) modes.\n- Manage chats with the three-dot menu.\n- Customize AI behavior in the right sidebar.\n- All chats are saved locally in your browser.');
+
+        // Re-implement simplified handlers here to avoid complexity
         el.clearHistoryBtn.onclick = () => {
             if (!state.activeChatId) return;
             if (confirm('Are you sure you want to clear the history for this chat?')) {
@@ -667,38 +671,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (chat) { chat.history = []; saveChats(); selectChat(state.activeChatId); }
             }
         };
-
         el.systemPromptInput.oninput = () => {
             const chat = state.chats.find(c => c.id === state.activeChatId);
             if(chat) { chat.system_prompt = el.systemPromptInput.value; chat.persona = 'custom'; el.personaSelect.value = 'custom'; saveChats(); }
         };
-        
         el.personaSelect.onchange = () => {
             const personaKey = el.personaSelect.value;
             const chat = state.chats.find(c => c.id === state.activeChatId);
             if(chat && personaKey !== 'custom') { chat.persona = personaKey; chat.system_prompt = PERSONAS[personaKey].prompt; el.systemPromptInput.value = chat.system_prompt; saveChats(); }
         };
-
         el.toggleLeftSidebar.onclick = () => {
             el.leftSidebar.classList.add('open');
             el.sidebarOverlay.classList.add('open');
         };
         el.sidebarOverlay.onclick = () => {
             el.leftSidebar.classList.remove('open');
-            el.sidebarOverlay.classList.remove('open');
             el.rightSidebar.classList.remove('open');
+            el.sidebarOverlay.classList.remove('open');
         };
-
         el.toggleRightSidebar.onclick = () => {
             el.rightSidebar.classList.add('open');
             el.sidebarOverlay.classList.add('open');
         };
-
-        el.quickPromptsBtn.onclick = () => el.quickPromptsModal.classList.remove('hidden');
-        el.modalCloseX.onclick = () => el.quickPromptsModal.classList.add('hidden');
-        el.quickPromptsModal.onclick = (e) => { if (e.target.id === 'quick-prompts-modal') el.quickPromptsModal.classList.add('hidden'); };
-
-        el.importChatsBtn.onclick = () => el.importChatsInput.click();
         el.importChatsInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -707,30 +701,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const importedChats = JSON.parse(event.target.result);
                     if (Array.isArray(importedChats)) {
-                        state.chats = [...importedChats, ...state.chats];
+                        state.chats = [...importedChats, ...state.chats.filter(c => !importedChats.find(ic => ic.id === c.id))];
                         saveChats(); renderChatList(); alert('Chats imported successfully!');
                     } else { throw new Error('Invalid format'); }
                 } catch (err) { alert('Failed to import chats. Please check the file format.'); }
             };
             reader.readAsText(file);
         };
-
         el.exportChatsBtn.onclick = () => {
             if (state.chats.length === 0) return alert('No chats to export.');
             const blob = new Blob([JSON.stringify(state.chats, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `fugthai_chats_${new Date().toISOString()}.json`;
+            a.download = `fugthai_chats_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
         };
+    }
+
+    function toggleChatOptionsMenu(chatId, buttonEl) {
+        closeAllMenus();
+        state.activeMenuChatId = chatId;
+        const menu = document.createElement('div');
+        menu.className = 'chat-options-menu text-sm';
+        const rect = buttonEl.getBoundingClientRect();
+        const chat = state.chats.find(c => c.id === chatId);
+        const pinText = chat.pinned ? 'Unpin Chat' : 'Pin Chat';
+        const pinIcon = 'fa-thumbtack';
         
-        el.helpBtn.onclick = () => alert('FugthAI Help\n\n- Use the dropdown to switch between Lite (fast) and High (detailed) modes.\n- Manage chats with the three-dot menu.\n- Customize AI behavior in the right sidebar.\n- All chats are saved locally in your browser.');
+        menu.innerHTML = `
+            <button data-action="pin" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center rounded-t-md"><i class="fa-solid ${pinIcon} fa-fw mr-2 w-4"></i>${pinText}</button>
+            <button data-action="rename" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center"><i class="fa-solid fa-pen-to-square fa-fw mr-2 w-4"></i>Rename</button>
+            <div class="h-px bg-[var(--border-color)] my-1"></div>
+            <button data-action="delete" class="w-full text-left px-3 py-1.5 hover:bg-red-500/10 text-[var(--danger)] flex items-center rounded-b-md"><i class="fa-solid fa-trash-can fa-fw mr-2 w-4"></i>Delete Chat</button>
+        `;
+        menu.style.left = `${rect.left - 150}px`;
+        menu.style.top = `${rect.bottom}px`;
+        document.body.appendChild(menu);
+    }
+
+    function closeAllMenus() {
+        document.querySelectorAll('.chat-options-menu').forEach(m => m.remove());
+        state.activeMenuChatId = null;
+    }
+
+    function handleMenuAction(action) {
+        const chatId = state.activeMenuChatId;
+        const chat = state.chats.find(c => c.id === chatId);
+        if (!chat) return;
+        switch(action) {
+            case 'pin': 
+                chat.pinned = !chat.pinned; 
+                saveChats(); 
+                renderChatList(); 
+                break;
+            case 'rename':
+                const newName = prompt('Enter new chat name:', chat.name);
+                if (newName && newName.trim()) { 
+                    chat.name = newName.trim(); 
+                    saveChats(); 
+                    renderChatList(); 
+                    if (chat.id === state.activeChatId) el.chatTitle.textContent = newName.trim(); 
+                }
+                break;
+            case 'delete':
+                if (confirm('Are you sure you want to permanently delete this chat?')) {
+                    state.chats = state.chats.filter(c => c.id !== chatId);
+                    saveChats();
+                    if (state.activeChatId === chatId) {
+                        closeAllMenus();
+                        selectChat(state.chats[0]?.id || null);
+                    }
+                    if (state.chats.length === 0) createNewChat();
+                    renderChatList();
+                }
+                break;
+        }
+        closeAllMenus();
     }
     
     init();
 });
 </script>
 </body>
-</ht
+</html>
