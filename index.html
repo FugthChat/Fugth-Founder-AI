@@ -1,155 +1,251 @@
-import os
-import json
-import logging
-import threading
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from sse_starlette.sse import EventSourceResponse
-from pydantic import BaseModel
-from llama_cpp import Llama
-from huggingface_hub import hf_hub_download
-from fastapi.middleware.cors import CORSMiddleware
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>FugthAI - Founder Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root, html[data-theme="light"] { --bg-main: #f4f4f5; --bg-sidebar: #ffffff; --bg-chat: #ffffff; --text-primary: #18181b; --text-secondary: #71717a; --border-color: #e4e4e7; }
+        html[data-theme="dark"] { --bg-main: #09090b; --bg-sidebar: #18181b; --bg-chat: #09090b; --text-primary: #f4f4f5; --text-secondary: #a1a1aa; --border-color: #27272a; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
+        .prose pre { background-color: #282c34; padding: 1rem; border-radius: 0.5rem; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #52525b; border-radius: 3px; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex">
 
-# --- Basic Setup ---
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+    <aside class="w-64 bg-[var(--bg-sidebar)] p-4 flex-col border-r border-[var(--border-color)] hidden md:flex">
+        <h1 class="text-xl font-bold mb-4">Fugth AI</h1>
+        <button id="new-chat-btn" class="w-full text-left py-2 px-3 rounded-lg bg-zinc-600 text-white hover:bg-zinc-700 mb-4 transition-colors text-sm">
+            <i class="fa-solid fa-plus mr-2"></i>New Chat
+        </button>
+        <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
+    </aside>
 
-# --- Model & State Management ---
-# This dictionary maps your model names to actual GGUF files.
-MODELS = {
-    "hanh": {
-        "repo_id": "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
-        "filename": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
-        "info": "Good for everyday tasks."
-    },
-    "ndm": {
-        "repo_id": "TheBloke/CodeLlama-7B-Instruct-GGUF",
-        "filename": "codellama-7b-instruct.Q4_K_M.gguf",
-        "info": "Specialized for Python and HTML coding."
-    },
-    "p8": {
-        "repo_id": None, # Placeholder for a real image model
-        "filename": None,
-        "info": "Image generation model (feature in development)."
-    },
-    "np": {
-        "repo_id": "TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
-        "filename": "mistral-7b-instruct-v0.2.Q4_K_M.gguf",
-        "info": "Advanced custom model with RAG capabilities (feature in development)."
+    <main class="flex-1 flex flex-col bg-[var(--bg-chat)]">
+        <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)]">
+            <h2 id="chat-title" class="font-semibold text-lg">New Chat</h2>
+            <div id="status-bar" class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <div id="status-dot" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <div id="chat-history" class="flex-1 p-6 space-y-6 overflow-y-auto">
+            </div>
+
+        <footer class="p-4">
+            <div class="max-w-4xl mx-auto">
+                <div id="coding-options" class="hidden mb-2 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                    <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Approximate Lines of Code: <span id="line-count-value">200-500</span></label>
+                    <input id="line-count-slider" type="range" min="0" max="1" value="0" step="1" class="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700">
+                </div>
+                <div class="relative flex items-center">
+                    <textarea id="prompt-input" rows="1" class="w-full bg-[var(--bg-sidebar)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none disabled:opacity-50" placeholder="Ask anything…" disabled></textarea>
+                    <button id="send-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-zinc-600 text-white hover:bg-zinc-700 disabled:bg-zinc-400" disabled>
+                      <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <aside class="w-72 bg-[var(--bg-sidebar)] p-4 flex-col border-l border-[var(--border-color)] hidden md:flex">
+        <h3 class="font-bold mb-4">Fugth Models</h3>
+        <div class="space-y-2">
+            <div>
+                <label for="model-switcher" class="text-sm font-medium">Select AI Expert</label>
+                <select id="model-switcher" class="w-full mt-1 bg-zinc-100 dark:bg-zinc-800 border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none">
+                    <option value="hanh">Fugth-1.1Hanh (Everyday Tasks)</option>
+                    <option value="ndm">Fugth-1.1NDM (Coding)</option>
+                    <option value="p8">Fugth-1.1P8 (Image Gen)</option>
+                    <option value="np">Fugth-1.1NP (Custom RAG)</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const HUGGING_FACE_URL = 'https://YOUR_USERNAME-YOUR_SPACE_NAME.hf.space'; // <-- IMPORTANT: UPDATE THIS
+
+    const el = {
+        chatHistory: document.getElementById('chat-history'),
+        promptInput: document.getElementById('prompt-input'),
+        sendBtn: document.getElementById('send-btn'),
+        statusBar: document.getElementById('status-bar'),
+        statusDot: document.getElementById('status-dot'),
+        statusText: document.getElementById('status-text'),
+        modelSwitcher: document.getElementById('model-switcher'),
+        codingOptions: document.getElementById('coding-options'),
+        lineCountSlider: document.getElementById('line-count-slider'),
+        lineCountValue: document.getElementById('line-count-value'),
+    };
+
+    let state = {
+        isGenerating: false,
+        eventSource: null,
+        activeModel: 'hanh',
+    };
+
+    function updateStatus(status, text) {
+        const statusMap = {
+            connecting: { color: 'bg-yellow-500', pulse: true },
+            ready: { color: 'bg-green-500', pulse: false },
+            generating: { color: 'bg-blue-500', pulse: true },
+            switching: { color: 'bg-purple-500', pulse: true },
+            error: { color: 'bg-red-500', pulse: false }
+        };
+        const newStatus = statusMap[status] || statusMap.connecting;
+        el.statusText.textContent = text;
+        el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color}`;
+        newStatus.pulse ? el.statusDot.classList.add('animate-pulse') : el.statusDot.classList.remove('animate-pulse');
     }
-}
 
-# Global state variables
-LLM = None
-CURRENT_MODEL_ID = None
-model_lock = threading.Lock()
+    async function checkApiStatus() {
+        try {
+            const response = await fetch(`${HUGGING_FACE_URL}/`);
+            if (!response.ok) throw new Error('Server not ready');
+            const data = await response.json();
+            updateStatus('ready', `Ready (Model: ${data.current_model || 'None'})`);
+            el.promptInput.disabled = false;
+            el.sendBtn.disabled = false;
+        } catch (e) {
+            updateStatus('error', 'AI is offline or starting...');
+        }
+    }
 
-def load_model(model_id: str):
-    """
-    Loads a model into memory. If a different model is already loaded,
-    it unloads it first. This is crucial for managing memory on the free tier.
-    """
-    global LLM, CURRENT_MODEL_ID
-    
-    with model_lock:
-        if CURRENT_MODEL_ID == model_id and LLM is not None:
-            logger.info(f"Model '{model_id}' is already loaded.")
-            return True
-
-        if LLM is not None:
-            logger.info(f"Unloading model '{CURRENT_MODEL_ID}' to load '{model_id}'...")
-            LLM = None
-            CURRENT_MODEL_ID = None
+    function addMessage(role, text) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `flex items-start gap-4 ${role === 'user' ? 'justify-end' : ''}`;
         
-        model_config = MODELS.get(model_id)
-        if not model_config or not model_config.get("repo_id"):
-            logger.warning(f"No valid configuration for model_id: {model_id}")
-            return False
-
-        model_path = os.path.join("models", model_config["filename"])
+        const messageContent = document.createElement('div');
+        messageContent.className = `max-w-xl p-4 rounded-xl ${role === 'user' ? 'bg-zinc-700 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
         
-        if not os.path.exists(model_path):
-            logger.info(f"Downloading model '{model_config['filename']}'...")
-            try:
-                hf_hub_download(repo_id=model_config["repo_id"], filename=model_config["filename"], local_dir="models")
-            except Exception as e:
-                logger.error(f"Failed to download model '{model_id}': {e}")
-                return False
+        // Use marked.js to render markdown, which creates <pre><code> for code blocks
+        messageContent.innerHTML = marked.parse(text);
         
-        logger.info(f"Loading model '{model_id}' from path: {model_path}")
-        try:
-            LLM = Llama(model_path=model_path, n_ctx=2048, n_threads=4, n_gpu_layers=0, verbose=True)
-            CURRENT_MODEL_ID = model_id
-            logger.info(f"Model '{model_id}' loaded successfully.")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to load model '{model_id}': {e}")
-            return False
+        // Apply highlighting to the code blocks created by marked.js
+        messageContent.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
 
-# --- FastAPI App Setup ---
-app = FastAPI()
+        messageWrapper.appendChild(messageContent);
+        el.chatHistory.appendChild(messageWrapper);
+        el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
+        return messageContent;
+    }
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # Allows your GitHub Pages site to connect
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    function handleSend() {
+        if (state.isGenerating) {
+            state.eventSource?.close();
+            setGenerating(false);
+            updateStatus('ready', 'Cancelled. Ready for new prompt.');
+            return;
+        }
 
-# --- API Request Models ---
-class ChatRequest(BaseModel):
-    model_id: str
-    prompt: str
-    line_count: str = "default"
+        const promptText = el.promptInput.value.trim();
+        if (!promptText) return;
 
-# --- API Endpoints ---
-@app.get("/")
-def get_status():
-    return {"status": "AI server is online", "current_model": CURRENT_MODEL_ID}
+        addMessage('user', promptText);
+        el.promptInput.value = '';
+        setGenerating(true);
 
-@app.post("/chat")
-async def chat_endpoint(request: ChatRequest):
-    
-    # Handle special placeholder models first
-    if request.model_id == "p8":
-        async def placeholder_generator_p8():
-            yield f"data: {json.dumps({'content': '🎨 Feature in development: Image generation powered by advanced models is coming soon.'})}\n\n"
-        return EventSourceResponse(placeholder_generator_p8())
+        const requestBody = {
+            model_id: state.activeModel,
+            prompt: promptText,
+            line_count: state.activeModel === 'ndm' ? el.lineCountValue.textContent : 'default'
+        };
+
+        let fullResponse = "";
+        const botMessageElement = addMessage('assistant', '<span class="blinking-cursor">▍</span>');
         
-    if request.model_id == "np":
-        async def placeholder_generator_np():
-            yield f"data: {json.dumps({'content': '📚 Feature in development: Advanced RAG capabilities for custom data analysis are coming soon.'})}\n\n"
-        return EventSourceResponse(placeholder_generator_np())
+        state.eventSource = new EventSource(`${HUGGING_FACE_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
 
-    # Load the requested model if it's not already loaded
-    if not load_model(request.model_id):
-        async def error_generator():
-            yield f"data: {json.dumps({'error': 'Failed to load the selected AI model. Please try again or select a different model.'})}\n\n"
-        return EventSourceResponse(error_generator())
-    
-    # Modify the prompt for the coding model
-    final_prompt = request.prompt
-    if request.model_id == "ndm" and request.line_count != "default":
-        line_instruction = f"Please generate approximately {request.line_count} lines of code."
-        final_prompt = f"{request.prompt}\n\n[Instruction: {line_instruction}]"
-        logger.info(f"Added coding instruction: {line_instruction}")
+        state.eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.error) {
+                botMessageElement.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                state.eventSource.close();
+                setGenerating(false);
+                updateStatus('error', 'An error occurred.');
+            } else if (data.content) {
+                fullResponse += data.content;
+                botMessageElement.innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
+            }
+        };
 
-    async def event_generator():
-        try:
-            stream = LLM.create_completion(
-                final_prompt,
-                max_tokens=2048, # Increased token limit for longer code
-                temperature=0.7,
-                stop=["</s>", "<|user|>", "<|system|>"],
-                stream=True
-            )
-            for chunk in stream:
-                content = chunk['choices'][0]['text']
-                if content:
-                    yield f"data: {json.dumps({'content': content})}\n\n"
-        except Exception as e:
-            logger.error(f"Error during generation: {e}")
-            yield f"data: {json.dumps({'error': 'An error occurred during text generation.'})}\n\n"
+        state.eventSource.onerror = (err) => {
+            console.error("EventSource failed:", err);
+            botMessageElement.innerHTML = marked.parse(fullResponse) + "<p class='text-red-500 mt-2'>Connection to AI lost.</p>";
+            botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
+            state.eventSource.close();
+            setGenerating(false);
+            updateStatus('error', 'Connection failed.');
+        };
+        
+        state.eventSource.onopen = () => {
+            if (state.isGenerating) {
+                updateStatus('generating', 'AI is thinking...');
+            }
+        };
+
+        // Custom event to handle final close from server
+        state.eventSource.addEventListener('close', () => {
+             botMessageElement.innerHTML = marked.parse(fullResponse);
+             botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
+             state.eventSource.close();
+             setGenerating(false);
+             updateStatus('ready', 'Ready for new prompt.');
+        });
+    }
+
+    function setGenerating(isGenerating) {
+        state.isGenerating = isGenerating;
+        el.promptInput.disabled = isGenerating;
+        el.sendBtn.innerHTML = isGenerating ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
+        el.sendBtn.disabled = !isGenerating; // Enable stop button only when generating
+        if(isGenerating) {
+             el.sendBtn.disabled = false;
+        }
+    }
     
-    return EventSourceResponse(event_generator())
+    function handleModelChange() {
+        state.activeModel = el.modelSwitcher.value;
+        const isCodingModel = state.activeModel === 'ndm';
+        el.codingOptions.style.display = isCodingModel ? 'block' : 'none';
+        updateStatus('switching', `Switching to ${el.modelSwitcher.options[el.modelSwitcher.selectedIndex].text}...`);
+        // The actual model switching happens on the backend when the next prompt is sent.
+        // We just update the UI here and let the user know.
+    }
+
+    function handleSliderChange() {
+        el.lineCountValue.textContent = el.lineCountSlider.value === "0" ? "200-500" : "1330-2000";
+    }
+
+    el.sendBtn.addEventListener('click', handleSend);
+    el.promptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+    el.modelSwitcher.addEventListener('change', handleModelChange);
+    el.lineCountSlider.addEventListener('input', handleSliderChange);
+
+    checkApiStatus();
+});
+</script>
+</body>
+</html>
