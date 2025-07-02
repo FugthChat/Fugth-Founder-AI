@@ -17,6 +17,7 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #52525b; border-radius: 3px; }
+        .chat-image { max-width: 100%; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-top: 0.5rem; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex">
@@ -43,12 +44,8 @@
 
         <footer class="p-4">
             <div class="max-w-4xl mx-auto">
-                <div id="coding-options" class="hidden mb-2 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                    <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Approximate Lines of Code: <span id="line-count-value">200-500</span></label>
-                    <input id="line-count-slider" type="range" min="0" max="1" value="0" step="1" class="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700">
-                </div>
                 <div class="relative flex items-center">
-                    <textarea id="prompt-input" rows="1" class="w-full bg-[var(--bg-sidebar)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none disabled:opacity-50" placeholder="Ask anything…" disabled></textarea>
+                    <textarea id="prompt-input" rows="1" class="w-full bg-[var(--bg-sidebar)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none disabled:opacity-50" placeholder="Describe an image to generate..." disabled></textarea>
                     <button id="send-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-zinc-600 text-white hover:bg-zinc-700 disabled:bg-zinc-400" disabled>
                       <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -59,62 +56,49 @@
 
     <aside class="w-72 bg-[var(--bg-sidebar)] p-4 flex-col border-l border-[var(--border-color)] hidden md:flex">
         <h3 class="font-bold mb-4">Fugth Models</h3>
-        <div class="space-y-2">
-            <div>
-                <label for="model-switcher" class="text-sm font-medium">Select AI Expert</label>
-                <select id="model-switcher" class="w-full mt-1 bg-zinc-100 dark:bg-zinc-800 border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none">
-                    <option value="hanh">Fugth-1.1Hanh (Everyday Tasks)</option>
-                    <option value="ndm">Fugth-1.1NDM (Coding)</option>
-                    <option value="p8">Fugth-1.1P8 (Image Gen)</option>
-                    <option value="np">Fugth-1.1NP (Custom RAG)</option>
-                </select>
-            </div>
+        <div>
+            <label for="model-switcher" class="text-sm font-medium">Select AI Expert</label>
+            <select id="model-switcher" class="w-full mt-1 bg-zinc-100 dark:bg-zinc-800 border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none">
+                <option value="hanh">Fugth-1.1Hanh (Everyday Tasks)</option>
+                <option value="ndm">Fugth-1.1NDM (Coding)</option>
+                <option value="p8">Fugth-1.1P8 (Image Gen)</option>
+                <option value="np">Fugth-1.1NP (Custom RAG)</option>
+            </select>
         </div>
     </aside>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const HUGGING_FACE_URL = 'https://YOUR_USERNAME-YOUR_SPACE_NAME.hf.space'; // <-- IMPORTANT: UPDATE THIS
+    const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space'; // <-- Make sure this is correct
 
     const el = {
         chatHistory: document.getElementById('chat-history'),
         promptInput: document.getElementById('prompt-input'),
         sendBtn: document.getElementById('send-btn'),
-        statusBar: document.getElementById('status-bar'),
-        statusDot: document.getElementById('status-dot'),
         statusText: document.getElementById('status-text'),
+        statusDot: document.getElementById('status-dot'),
         modelSwitcher: document.getElementById('model-switcher'),
-        codingOptions: document.getElementById('coding-options'),
-        lineCountSlider: document.getElementById('line-count-slider'),
-        lineCountValue: document.getElementById('line-count-value'),
     };
 
-    let state = {
-        isGenerating: false,
-        eventSource: null,
-        activeModel: 'hanh',
-    };
+    let state = { isGenerating: false, eventSource: null, activeModel: 'hanh' };
 
     function updateStatus(status, text) {
         const statusMap = {
             connecting: { color: 'bg-yellow-500', pulse: true },
             ready: { color: 'bg-green-500', pulse: false },
             generating: { color: 'bg-blue-500', pulse: true },
-            switching: { color: 'bg-purple-500', pulse: true },
             error: { color: 'bg-red-500', pulse: false }
         };
         const newStatus = statusMap[status] || statusMap.connecting;
         el.statusText.textContent = text;
-        el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color}`;
-        newStatus.pulse ? el.statusDot.classList.add('animate-pulse') : el.statusDot.classList.remove('animate-pulse');
+        el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color} ${newStatus.pulse ? 'animate-pulse' : ''}`;
     }
 
     async function checkApiStatus() {
         try {
             const response = await fetch(`${HUGGING_FACE_URL}/`);
             if (!response.ok) throw new Error('Server not ready');
-            const data = await response.json();
-            updateStatus('ready', `Ready (Model: ${data.current_model || 'None'})`);
+            updateStatus('ready', `Ready`);
             el.promptInput.disabled = false;
             el.sendBtn.disabled = false;
         } catch (e) {
@@ -122,20 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function addMessage(role, text) {
+    function addMessage(role, content) {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `flex items-start gap-4 ${role === 'user' ? 'justify-end' : ''}`;
         
         const messageContent = document.createElement('div');
         messageContent.className = `max-w-xl p-4 rounded-xl ${role === 'user' ? 'bg-zinc-700 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
-        
-        // Use marked.js to render markdown, which creates <pre><code> for code blocks
-        messageContent.innerHTML = marked.parse(text);
-        
-        // Apply highlighting to the code blocks created by marked.js
-        messageContent.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
-        });
+        messageContent.innerHTML = content;
 
         messageWrapper.appendChild(messageContent);
         el.chatHistory.appendChild(messageWrapper);
@@ -147,22 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.isGenerating) {
             state.eventSource?.close();
             setGenerating(false);
-            updateStatus('ready', 'Cancelled. Ready for new prompt.');
             return;
         }
 
         const promptText = el.promptInput.value.trim();
         if (!promptText) return;
 
-        addMessage('user', promptText);
+        addMessage('user', marked.parse(promptText));
         el.promptInput.value = '';
         setGenerating(true);
-
-        const requestBody = {
-            model_id: state.activeModel,
-            prompt: promptText,
-            line_count: state.activeModel === 'ndm' ? el.lineCountValue.textContent : 'default'
-        };
 
         let fullResponse = "";
         const botMessageElement = addMessage('assistant', '<span class="blinking-cursor">▍</span>');
@@ -170,79 +140,44 @@ document.addEventListener('DOMContentLoaded', () => {
         state.eventSource = new EventSource(`${HUGGING_FACE_URL}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify({ model_id: state.activeModel, prompt: promptText }),
         });
 
         state.eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.error) {
+
+            if (data.image_url) { // --- NEW: Handle Image Response ---
+                botMessageElement.innerHTML = `<img src="${data.image_url}" class="chat-image" alt="Generated image based on prompt" />`;
+                state.eventSource.close();
+                setGenerating(false);
+            } else if (data.error) {
                 botMessageElement.innerHTML = `<p class="text-red-500">${data.error}</p>`;
                 state.eventSource.close();
                 setGenerating(false);
-                updateStatus('error', 'An error occurred.');
             } else if (data.content) {
                 fullResponse += data.content;
                 botMessageElement.innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
             }
         };
 
-        state.eventSource.onerror = (err) => {
-            console.error("EventSource failed:", err);
-            botMessageElement.innerHTML = marked.parse(fullResponse) + "<p class='text-red-500 mt-2'>Connection to AI lost.</p>";
-            botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
-            state.eventSource.close();
-            setGenerating(false);
-            updateStatus('error', 'Connection failed.');
-        };
-        
-        state.eventSource.onopen = () => {
-            if (state.isGenerating) {
-                updateStatus('generating', 'AI is thinking...');
-            }
-        };
-
-        // Custom event to handle final close from server
-        state.eventSource.addEventListener('close', () => {
-             botMessageElement.innerHTML = marked.parse(fullResponse);
+        state.eventSource.onerror = () => {
+             botMessageElement.innerHTML = marked.parse(fullResponse) + "<p class='text-red-500 mt-2'>Connection to AI lost.</p>";
              botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
              state.eventSource.close();
              setGenerating(false);
-             updateStatus('ready', 'Ready for new prompt.');
-        });
+        };
     }
-
+    
     function setGenerating(isGenerating) {
         state.isGenerating = isGenerating;
         el.promptInput.disabled = isGenerating;
         el.sendBtn.innerHTML = isGenerating ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
-        el.sendBtn.disabled = !isGenerating; // Enable stop button only when generating
-        if(isGenerating) {
-             el.sendBtn.disabled = false;
-        }
-    }
-    
-    function handleModelChange() {
-        state.activeModel = el.modelSwitcher.value;
-        const isCodingModel = state.activeModel === 'ndm';
-        el.codingOptions.style.display = isCodingModel ? 'block' : 'none';
-        updateStatus('switching', `Switching to ${el.modelSwitcher.options[el.modelSwitcher.selectedIndex].text}...`);
-        // The actual model switching happens on the backend when the next prompt is sent.
-        // We just update the UI here and let the user know.
+        updateStatus(isGenerating ? 'generating' : 'ready', isGenerating ? 'AI is working...' : 'Ready');
     }
 
-    function handleSliderChange() {
-        el.lineCountValue.textContent = el.lineCountSlider.value === "0" ? "200-500" : "1330-2000";
-    }
-
+    el.modelSwitcher.addEventListener('change', () => { state.activeModel = el.modelSwitcher.value; });
     el.sendBtn.addEventListener('click', handleSend);
-    el.promptInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    });
-    el.modelSwitcher.addEventListener('change', handleModelChange);
-    el.lineCountSlider.addEventListener('input', handleSliderChange);
+    el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 
     checkApiStatus();
 });
