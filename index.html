@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fugth-Founder-AI</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 80%;
+            max-width: 800px;
+            height: 90vh;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background-color: #4a4a4a;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+        }
+        .message {
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .user-message {
+            text-align: right;
+        }
+        .user-message .message-content {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px 10px 0 10px;
+            display: inline-block;
+        }
+        .bot-message .message-content {
+            background-color: #e9e9eb;
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 10px 10px 10px 0;
+            display: inline-block;
+        }
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+        }
+        #message-input {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        #send-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin-left: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Fugth-Founder-AI</h1>
+        </div>
+        <div class="chat-box" id="chat-box">
+            </div>
+        <form class="chat-input" id="chat-form">
+            <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+            <button id="send-button">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+
+        let chatHistory = [];
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = messageInput.value.trim();
+            if (!userMessage) return;
+
+            // Add user message to chat box and history
+            addMessageToChatBox('user', userMessage);
+            chatHistory.push({ role: 'user', content: userMessage });
+            messageInput.value = '';
+
+            // Add a placeholder for the bot's response
+            const botMessageContainer = addMessageToChatBox('bot', '');
+            const botMessageContent = botMessageContainer.querySelector('.message-content');
+
+            const eventSource = new EventSource('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ history: chatHistory }),
+            });
+
+            let fullBotMessage = '';
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.content) {
+                    fullBotMessage += data.content;
+                    botMessageContent.textContent = fullBotMessage;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error("EventSource failed:", err);
+                botMessageContent.textContent = "Error receiving response.";
+                eventSource.close();
+            };
+        });
+
+        function addMessageToChatBox(sender, message) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message', `${sender}-message`);
+
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+            messageContent.textContent = message;
+
+            messageContainer.appendChild(messageContent);
+            chatBox.appendChild(messageContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return messageContainer;
+        }
+    </script>
+</body>
+</html>
