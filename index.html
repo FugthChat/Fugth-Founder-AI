@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -7,31 +7,56 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        :root, html[data-theme="light"] { --bg-main: #f4f4f5; --bg-sidebar: #ffffff; --bg-chat: #ffffff; --text-primary: #18181b; --text-secondary: #71717a; --border-color: #e4e4e7; }
-        html[data-theme="dark"] { --bg-main: #09090b; --bg-sidebar: #18181b; --bg-chat: #09090b; --text-primary: #f4f4f5; --text-secondary: #a1a1aa; --border-color: #27272a; }
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
-        .prose pre { background-color: #282c34; padding: 1rem; border-radius: 0.5rem; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #52525b; border-radius: 3px; }
-        .chat-image { max-width: 100%; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-top: 0.5rem; }
+        :root, html[data-theme="dark"] {
+            --bg-main: #000000; --bg-sidebar: #101010; --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0; --border-color: #2a2a2a; --accent-color: #ffffff;
+            --bg-input: #1c1c1c; --bg-hover: #222222;
+        }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-primary); }
+        .prose { color: var(--text-primary); }
+        .prose pre { background-color: #0d1117; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); font-size: 0.9em; }
+        .prose code:not(pre *) { background-color: #2a2a2a; color: #f0f0f0; padding: 0.2em 0.4em; border-radius: 4px; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
+
+        /* Sidebar Auto-Expand/Collapse */
+        .sidebar { width: 4rem; transition: width 0.3s ease-in-out; }
+        .sidebar:hover { width: 18rem; }
+        main { transition: margin 0.3s ease-in-out; }
+        @media (min-width: 768px) {
+            #left-sidebar:hover ~ main { margin-left: 18rem; }
+            #right-sidebar:hover ~ main { margin-right: 18rem; }
+            main { margin-left: 4rem; margin-right: 4rem; }
+        }
+        .sidebar-content { opacity: 0; transition: opacity 0.2s 0.1s ease-in-out; white-space: nowrap; pointer-events: none; }
+        .sidebar:hover .sidebar-content { opacity: 1; pointer-events: auto; }
+        
+        .chat-image { max-width: 100%; max-height: 512px; border-radius: 0.75rem; border: 1px solid var(--border-color); margin-top: 0.5rem; }
+        .blinking-cursor { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .chat-options-menu { position: absolute; z-index: 50; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); padding: 4px; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex">
 
-    <aside class="w-64 bg-[var(--bg-sidebar)] p-4 flex-col border-r border-[var(--border-color)] hidden md:flex">
-        <h1 class="text-xl font-bold mb-4">Fugth AI</h1>
-        <button id="new-chat-btn" class="w-full text-left py-2 px-3 rounded-lg bg-zinc-600 text-white hover:bg-zinc-700 mb-4 transition-colors text-sm">
-            <i class="fa-solid fa-plus mr-2"></i>New Chat
-        </button>
-        <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
+    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex-col border-r border-[var(--border-color)] hidden md:flex">
+        <div class="flex items-center justify-between mb-4 flex-shrink-0">
+            <h1 class="text-xl font-bold sidebar-content">Fugth AI</h1>
+            <button id="new-chat-btn" class="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-lg"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <nav id="chat-list" class="flex-1 overflow-y-auto -mr-2 pr-2 sidebar-content"></nav>
+        <div class="pt-4 border-t border-[var(--border-color)] space-y-1 text-sm sidebar-content">
+            <button id="import-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"><i class="fa-solid fa-file-import w-6 text-[var(--text-secondary)]"></i><span class="ml-2">Import Chats</span></button>
+            <input type="file" id="import-chats-input" class="hidden" accept=".json">
+            <button id="export-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"><i class="fa-solid fa-file-export w-6 text-[var(--text-secondary)]"></i><span class="ml-2">Export All Chats</span></button>
+        </div>
     </aside>
 
-    <main class="flex-1 flex flex-col bg-[var(--bg-chat)]">
-        <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)]">
+    <main class="flex-1 flex flex-col bg-[var(--bg-main)]">
+        <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0">
             <h2 id="chat-title" class="font-semibold text-lg">New Chat</h2>
             <div id="status-bar" class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                 <div id="status-dot" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
@@ -40,146 +65,359 @@
         </header>
 
         <div id="chat-history" class="flex-1 p-6 space-y-6 overflow-y-auto">
+             <div id="welcome-message" class="text-center pt-20">
+                <div class="inline-block p-4 rounded-full bg-gray-800 border border-gray-700 mb-4">
+                     <i class="fa-solid fa-brain text-4xl text-gray-400"></i>
+                </div>
+                <h1 class="text-3xl font-bold">How can I help you today?</h1>
             </div>
+        </div>
 
-        <footer class="p-4">
+        <footer class="p-4 flex-shrink-0">
             <div class="max-w-4xl mx-auto">
+                <div id="coding-options" class="hidden mb-2 p-3 bg-[var(--bg-input)] rounded-lg border border-[var(--border-color)]">
+                    <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Approximate Lines of Code: <span id="line-count-value">200-500</span></label>
+                    <input id="line-count-slider" type="range" min="0" max="1" value="0" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                </div>
                 <div class="relative flex items-center">
-                    <textarea id="prompt-input" rows="1" class="w-full bg-[var(--bg-sidebar)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-zinc-500 resize-none disabled:opacity-50" placeholder="Describe an image to generate..." disabled></textarea>
-                    <button id="send-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-zinc-600 text-white hover:bg-zinc-700 disabled:bg-zinc-400" disabled>
-                      <i class="fa-solid fa-paper-plane"></i>
+                    <textarea id="prompt-input" rows="1" class="w-full bg-[var(--bg-input)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none" placeholder="Ask anything…" disabled></textarea>
+                    <button id="send-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--accent-color)] text-[var(--bg-main)] hover:opacity-90 disabled:opacity-50" disabled>
+                      <i class="fa-solid fa-arrow-up"></i>
                     </button>
                 </div>
             </div>
         </footer>
     </main>
 
-    <aside class="w-72 bg-[var(--bg-sidebar)] p-4 flex-col border-l border-[var(--border-color)] hidden md:flex">
-        <h3 class="font-bold mb-4">Fugth Models</h3>
-        <div>
-            <label for="model-switcher" class="text-sm font-medium">Select AI Expert</label>
-            <select id="model-switcher" class="w-full mt-1 bg-zinc-100 dark:bg-zinc-800 border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none">
-                <option value="hanh">Fugth-1.1Hanh (Everyday Tasks)</option>
-                <option value="ndm">Fugth-1.1NDM (Coding)</option>
-                <option value="p8">Fugth-1.1P8 (Image Gen)</option>
-                <option value="np">Fugth-1.1NP (Custom RAG)</option>
-            </select>
+    <aside id="right-sidebar" class="sidebar w-16 hover:w-80 bg-[var(--bg-sidebar)] p-4 flex-col border-l border-[var(--border-color)] hidden md:flex">
+        <div class="flex items-center justify-between mb-4 flex-shrink-0">
+             <h3 class="font-bold sidebar-content">Configuration</h3>
+             <i class="fa-solid fa-sliders text-lg"></i>
+        </div>
+        <div class="space-y-4 sidebar-content">
+            <div>
+                <label for="model-switcher" class="text-sm font-medium">Fugth Model</label>
+                <select id="model-switcher" class="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none">
+                    <option value="hanh">Fugth-1.1Hanh (Everyday)</option>
+                    <option value="ndm">Fugth-1.1NDM (Coding)</option>
+                    <option value="p8">Fugth-1.1P8 (Image Gen)</option>
+                    <option value="np">Fugth-1.1NP (Advanced)</option>
+                </select>
+            </div>
+            <div>
+                <label for="persona-select" class="text-sm font-medium">Persona</label>
+                <select id="persona-select" class="w-full mt-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none"></select>
+            </div>
+            <div>
+                <label for="system-prompt-input" class="text-sm font-medium">System Prompt</label>
+                <textarea id="system-prompt-input" rows="10" class="w-full mt-1 bg-[var(--bg-input)] text-[var(--text-primary)] p-2 rounded-md border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"></textarea>
+            </div>
         </div>
     </aside>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space'; // <-- Make sure this is correct
+    // URL is hardcoded as requested. No need to update.
+    const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space';
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
 
     const el = {
-        chatHistory: document.getElementById('chat-history'),
-        promptInput: document.getElementById('prompt-input'),
-        sendBtn: document.getElementById('send-btn'),
-        statusText: document.getElementById('status-text'),
-        statusDot: document.getElementById('status-dot'),
-        modelSwitcher: document.getElementById('model-switcher'),
+        chatHistory: $('#chat-history'), promptInput: $('#prompt-input'), sendBtn: $('#send-btn'),
+        statusText: $('#status-text'), statusDot: $('#status-dot'), modelSwitcher: $('#model-switcher'),
+        codingOptions: $('#coding-options'), lineCountSlider: $('#line-count-slider'),
+        lineCountValue: $('#line-count-value'), chatList: $('#chat-list'), chatTitle: $('#chat-title'),
+        newChatBtn: $('#new-chat-btn'), welcomeMessage: $('#welcome-message'),
+        personaSelect: $('#persona-select'), systemPromptInput: $('#system-prompt-input'),
+        importChatsBtn: $('#import-chats-btn'), importChatsInput: $('#import-chats-input'),
+        exportChatsBtn: $('#export-chats-btn'),
     };
 
-    let state = { isGenerating: false, eventSource: null, activeModel: 'hanh' };
+    const PERSONAS = {
+        default: "You are FugthAI, a helpful and direct AI assistant.",
+        code: "You are an expert programmer. Provide only code with brief, professional explanations. Do not use conversational openings or closings.",
+        sales: "You are a master sales expert. Be persuasive, confident, and focus on sales strategy.",
+        custom: "Custom prompt below."
+    };
 
-    function updateStatus(status, text) {
-        const statusMap = {
-            connecting: { color: 'bg-yellow-500', pulse: true },
-            ready: { color: 'bg-green-500', pulse: false },
-            generating: { color: 'bg-blue-500', pulse: true },
-            error: { color: 'bg-red-500', pulse: false }
-        };
-        const newStatus = statusMap[status] || statusMap.connecting;
-        el.statusText.textContent = text;
-        el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color} ${newStatus.pulse ? 'animate-pulse' : ''}`;
+    let state = {
+        isGenerating: false, eventSource: null, activeModel: 'hanh',
+        chats: [], activeChatId: null, activeMenuChatId: null
+    };
+
+    function init() {
+        loadState();
+        Object.keys(PERSONAS).forEach(key => el.personaSelect.add(new Option(key.charAt(0).toUpperCase() + key.slice(1), key)));
+        if (state.chats.length === 0) createNewChat();
+        if (!state.activeChatId || !state.chats.find(c => c.id === state.activeChatId)) {
+            state.activeChatId = state.chats[0]?.id;
+        }
+        renderChatList();
+        selectChat(state.activeChatId);
+        addEventListeners();
+        checkApiStatus();
     }
 
-    async function checkApiStatus() {
-        try {
-            const response = await fetch(`${HUGGING_FACE_URL}/`);
-            if (!response.ok) throw new Error('Server not ready');
-            updateStatus('ready', `Ready`);
-            el.promptInput.disabled = false;
-            el.sendBtn.disabled = false;
-        } catch (e) {
-            updateStatus('error', 'AI is offline or starting...');
+    function saveState() {
+        localStorage.setItem('fugthfounder_ai_v2', JSON.stringify({ chats: state.chats, activeChatId: state.activeChatId }));
+    }
+
+    function loadState() {
+        const savedState = JSON.parse(localStorage.getItem('fugthfounder_ai_v2'));
+        if (savedState) {
+            state.chats = savedState.chats || [];
+            state.activeChatId = savedState.activeChatId;
         }
     }
 
-    function addMessage(role, content) {
+    function createNewChat() {
+        const newChat = { id: Date.now(), name: 'New Chat', history: [], persona: 'default', system_prompt: PERSONAS.default };
+        state.chats.unshift(newChat);
+        selectChat(newChat.id);
+    }
+
+    function renderChatList() {
+        el.chatList.innerHTML = '';
+        state.chats.forEach(c => {
+            const div = document.createElement('div');
+            div.className = `chat-item group relative flex items-center p-2 rounded-lg cursor-pointer ${c.id === state.activeChatId ? 'bg-[var(--bg-hover)]' : 'hover:bg-[var(--bg-hover)]'}`;
+            div.dataset.chatId = c.id;
+            div.innerHTML = `<span class="flex-grow truncate text-sm">${c.name}</span><button data-action="toggle-menu" class="absolute right-1 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-gray-300 dark:hover:bg-gray-700"><i class="fa-solid fa-ellipsis-h"></i></button>`;
+            el.chatList.appendChild(div);
+        });
+    }
+
+    function selectChat(id) {
+        if (!id && state.chats.length > 0) id = state.chats[0].id;
+        if (!id) return;
+        
+        state.activeChatId = id;
+        renderChatList();
+        const chat = state.chats.find(c => c.id === id);
+        if (chat) {
+            el.chatTitle.textContent = chat.name;
+            el.systemPromptInput.value = chat.system_prompt;
+            el.personaSelect.value = chat.persona;
+            el.chatHistory.innerHTML = '';
+            el.welcomeMessage.style.display = chat.history.length > 0 ? 'none' : 'block';
+            chat.history.forEach(m => addMessage(m.role, m.content, false));
+            el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
+        }
+    }
+
+    function addMessage(role, content, save = true) {
+        el.welcomeMessage.style.display = 'none';
         const messageWrapper = document.createElement('div');
-        messageWrapper.className = `flex items-start gap-4 ${role === 'user' ? 'justify-end' : ''}`;
+        const isUser = role === 'user';
+        messageWrapper.className = `message-wrapper flex items-start gap-4 ${isUser ? 'justify-end' : ''}`;
         
         const messageContent = document.createElement('div');
-        messageContent.className = `max-w-xl p-4 rounded-xl ${role === 'user' ? 'bg-zinc-700 text-white' : 'bg-zinc-100 dark:bg-zinc-800'}`;
+        messageContent.className = `message-content prose max-w-3xl p-4 rounded-xl ${isUser ? 'bg-gray-800 text-gray-100' : 'bg-[var(--bg-input)]'}`;
         messageContent.innerHTML = content;
-
+        
         messageWrapper.appendChild(messageContent);
         el.chatHistory.appendChild(messageWrapper);
         el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
+
+        if (save) {
+            const chat = state.chats.find(c => c.id === state.activeChatId);
+            if (chat) { chat.history.push({ role, content }); saveState(); }
+        }
         return messageContent;
+    }
+
+    function buildPrompt() {
+        const chat = state.chats.find(c => c.id === state.activeChatId);
+        let systemPrompt = `<|system|>\n${chat.system_prompt}</s>\n`;
+        let conversation = chat.history.map(msg => {
+            return msg.role === 'user' ? `<|user|>\n${msg.content}</s>\n` : `<|assistant|>\n${msg.content}</s>\n`;
+        }).join('');
+        
+        let lineInstruction = "";
+        if(state.activeModel === 'ndm') {
+            const lineCount = el.lineCountValue.textContent;
+            lineInstruction = `\n[Instruction: Generate approximately ${lineCount} lines of code.]`
+        }
+
+        return systemPrompt + conversation + lineInstruction + `<|assistant|>\n`;
+    }
+
+    function setGenerating(isGenerating, message = '') {
+        state.isGenerating = isGenerating;
+        el.promptInput.disabled = isGenerating;
+        el.sendBtn.disabled = isGenerating;
+        el.sendBtn.innerHTML = isGenerating ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-arrow-up"></i>';
+        updateStatus(isGenerating ? 'generating' : 'ready', message || (isGenerating ? 'AI is thinking...' : 'Ready'));
+         if (isGenerating) el.sendBtn.disabled = false;
     }
 
     function handleSend() {
         if (state.isGenerating) {
             state.eventSource?.close();
-            setGenerating(false);
+            setGenerating(false, 'Cancelled');
             return;
         }
-
         const promptText = el.promptInput.value.trim();
         if (!promptText) return;
 
         addMessage('user', marked.parse(promptText));
+        
+        const chat = state.chats.find(c => c.id === state.activeChatId);
+        if (chat && chat.name === 'New Chat') {
+            chat.name = promptText.substring(0, 30);
+            el.chatTitle.textContent = chat.name;
+            renderChatList();
+        }
         el.promptInput.value = '';
+
         setGenerating(true);
 
+        const requestBody = {
+            model_id: state.activeModel,
+            prompt: buildPrompt(),
+        };
+
         let fullResponse = "";
-        const botMessageElement = addMessage('assistant', '<span class="blinking-cursor">▍</span>');
+        const botMessageElement = addMessage('assistant', '<span class="blinking-cursor">▍</span>', false);
         
         state.eventSource = new EventSource(`${HUGGING_FACE_URL}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model_id: state.activeModel, prompt: promptText }),
+            body: JSON.stringify(requestBody),
         });
 
         state.eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
-
-            if (data.image_url) { // --- NEW: Handle Image Response ---
-                botMessageElement.innerHTML = `<img src="${data.image_url}" class="chat-image" alt="Generated image based on prompt" />`;
+            if (data.close) {
                 state.eventSource.close();
-                setGenerating(false);
+                return;
+            }
+            if (data.image_url) {
+                botMessageElement.innerHTML = `<img src="${data.image_url}" class="chat-image" alt="Generated image" />`;
+                addMessage('assistant', `Image generated: <a href="${data.image_url}" target="_blank" class="text-[var(--accent-color)] hover:underline">${data.image_url}</a>`, true);
+                state.eventSource.close();
             } else if (data.error) {
                 botMessageElement.innerHTML = `<p class="text-red-500">${data.error}</p>`;
+                addMessage('assistant', `Error: ${data.error}`, true);
                 state.eventSource.close();
-                setGenerating(false);
             } else if (data.content) {
                 fullResponse += data.content;
                 botMessageElement.innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
             }
         };
 
-        state.eventSource.onerror = () => {
-             botMessageElement.innerHTML = marked.parse(fullResponse) + "<p class='text-red-500 mt-2'>Connection to AI lost.</p>";
-             botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
-             state.eventSource.close();
-             setGenerating(false);
+        state.eventSource.onerror = (err) => {
+            addMessage('assistant', fullResponse, true);
+            botMessageElement.innerHTML = marked.parse(fullResponse) + "<p class='text-red-500 mt-2'>Connection lost.</p>";
+            botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
+            setGenerating(false, 'Error');
+            state.eventSource.close();
         };
+        
+        state.eventSource.addEventListener('close', () => {
+             addMessage('assistant', fullResponse, true);
+             botMessageElement.innerHTML = marked.parse(fullResponse);
+             botMessageElement.querySelectorAll('pre code').forEach(hljs.highlightElement);
+             setGenerating(false, 'Ready');
+             state.eventSource.close();
+        });
     }
     
-    function setGenerating(isGenerating) {
-        state.isGenerating = isGenerating;
-        el.promptInput.disabled = isGenerating;
-        el.sendBtn.innerHTML = isGenerating ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
-        updateStatus(isGenerating ? 'generating' : 'ready', isGenerating ? 'AI is working...' : 'Ready');
+    function addEventListeners() {
+        el.sendBtn.onclick = handleSend;
+        el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }});
+        el.newChatBtn.onclick = createNewChat;
+        el.modelSwitcher.onchange = () => {
+            state.activeModel = el.modelSwitcher.value;
+            el.codingOptions.style.display = state.activeModel === 'ndm' ? 'block' : 'none';
+            updateStatus('switching', `Switched to ${el.modelSwitcher.options[el.modelSwitcher.selectedIndex].text}`);
+        };
+        el.lineCountSlider.oninput = () => { el.lineCountValue.textContent = el.lineCountSlider.value === "0" ? "200-500" : "1330-2000"; };
+        el.chatList.addEventListener('click', e => {
+            const chatItem = e.target.closest('.chat-item');
+            if (!chatItem) return;
+            const menuButton = e.target.closest('[data-action="toggle-menu"]');
+            if (menuButton) {
+                e.stopPropagation();
+                toggleChatOptionsMenu(parseInt(chatItem.dataset.chatId, 10), menuButton);
+            } else {
+                selectChat(parseInt(chatItem.dataset.chatId, 10));
+            }
+        });
+        document.addEventListener('click', handleMenuActions);
+        el.personaSelect.onchange = () => {
+            const chat = state.chats.find(c => c.id === state.activeChatId);
+            if (chat) {
+                chat.persona = el.personaSelect.value;
+                if (chat.persona !== 'custom') { chat.system_prompt = PERSONAS[chat.persona]; el.systemPromptInput.value = chat.system_prompt; }
+                saveState();
+            }
+        };
+        el.systemPromptInput.oninput = () => {
+            const chat = state.chats.find(c => c.id === state.activeChatId);
+            if (chat) { chat.system_prompt = el.systemPromptInput.value; chat.persona = 'custom'; el.personaSelect.value = 'custom'; saveState(); }
+        };
+        el.importChatsBtn.onclick = () => el.importChatsInput.click();
+        el.importChatsInput.onchange = (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (Array.isArray(imported.chats)) {
+                        state.chats = imported.chats;
+                        state.activeChatId = imported.activeChatId;
+                        init(); alert('Chats imported!');
+                    } else { throw new Error('Invalid format'); }
+                } catch (err) { alert('Failed to import chats.'); }
+            };
+            reader.readAsText(file);
+        };
+        el.exportChatsBtn.onclick = () => {
+            if (state.chats.length === 0) return alert('No chats to export.');
+            const dataStr = JSON.stringify({ chats: state.chats, activeChatId: state.activeChatId }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fugthai_chats_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
+        };
     }
 
-    el.modelSwitcher.addEventListener('change', () => { state.activeModel = el.modelSwitcher.value; });
-    el.sendBtn.addEventListener('click', handleSend);
-    el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-
-    checkApiStatus();
+    function toggleChatOptionsMenu(chatId, buttonEl) {
+        closeAllMenus();
+        state.activeMenuChatId = chatId;
+        const menu = document.createElement('div');
+        menu.className = 'chat-options-menu';
+        const rect = buttonEl.getBoundingClientRect();
+        menu.innerHTML = `<button data-action="rename" class="w-full text-left px-3 py-1.5 hover:bg-[var(--bg-hover)] flex items-center text-sm"><i class="fa-solid fa-pen-to-square fa-fw mr-2"></i>Rename</button><div class="h-px bg-[var(--border-color)] my-1"></div><button data-action="delete" class="w-full text-left px-3 py-1.5 hover:bg-[var(--bg-hover)] text-red-500 flex items-center text-sm"><i class="fa-solid fa-trash-can fa-fw mr-2"></i>Delete</button>`;
+        menu.style.left = `${rect.left - 120}px`; menu.style.top = `${rect.bottom}px`;
+        document.body.appendChild(menu);
+    }
+    function closeAllMenus() { $$('.chat-options-menu').forEach(m => m.remove()); state.activeMenuChatId = null; }
+    function handleMenuActions(e) {
+        if (!e.target.closest('.chat-options-menu') && !e.target.closest('[data-action="toggle-menu"]')) closeAllMenus();
+        const actionButton = e.target.closest('.chat-options-menu button'); if (!actionButton) return;
+        const action = actionButton.dataset.action; const chatId = state.activeMenuChatId;
+        const chat = state.chats.find(c => c.id === chatId); if (!chat) return;
+        switch(action) {
+            case 'rename':
+                const newName = prompt('Enter new chat name:', chat.name);
+                if (newName && newName.trim()) { chat.name = newName.trim(); if (chat.id === state.activeChatId) el.chatTitle.textContent = newName.trim(); renderChatList(); saveState(); }
+                break;
+            case 'delete':
+                if (confirm('Are you sure you want to delete this chat?')) {
+                    state.chats = state.chats.filter(c => c.id !== chatId);
+                    if (state.activeChatId === chatId) { state.activeChatId = state.chats[0]?.id || null; selectChat(state.activeChatId); }
+                    renderChatList(); saveState();
+                }
+                break;
+        }
+        closeAllMenus();
+    }
+    
+    init();
 });
 </script>
 </body>
