@@ -46,15 +46,12 @@
 <body class="flex h-screen overflow-hidden antialiased">
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-30 opacity-0 pointer-events-none transition-opacity md:hidden"></div>
     
-    <!-- Left Sidebar -->
     <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0 md:w-20 md:hover:w-72">
-        <!-- Header -->
         <div class="flex items-center mb-6 flex-shrink-0">
             <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="text-[var(--accent)] sidebar-brand-text">AI</span></h1>
             <button id="theme-btn" class="hover:bg-black/10 dark:hover:bg-white/10 p-2 rounded-full text-lg ml-auto"><i class="fa-solid fa-moon"></i></button>
         </div>
 
-        <!-- Tabs -->
         <div class="flex border border-[var(--border-color)] rounded-lg p-1 mb-4">
             <button id="chatbot-tab-btn" class="tab-btn active w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center shadow-sm">
                 <i class="fa-solid fa-comments"></i><span class="ml-2 sidebar-text font-semibold">Chatbot</span>
@@ -64,7 +61,6 @@
             </button>
         </div>
 
-        <!-- Sidebar Content (Chat-specific) -->
         <div id="chatbot-sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
             <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
                 <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span>
@@ -72,25 +68,15 @@
             <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
         
-        <!-- Sidebar Content (Workspace-specific) -->
         <div id="workspace-sidebar-content" class="hidden flex-col flex-1 overflow-y-auto -mr-4 pr-4">
             <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
                 <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span>
             </button>
             <nav id="project-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
-
-        <!-- Footer Buttons -->
-        <div class="pt-4 border-t border-[var(--border-color)] space-y-1 text-sm">
-             <button id="import-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-file-import w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Import</span></button>
-             <input type="file" id="import-input" class="hidden" accept=".json">
-             <button id="export-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-file-export w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Export</span></button>
-        </div>
     </aside>
 
-    <!-- Main Content Area -->
     <main class="flex-1 flex flex-col min-w-0 relative">
-        <!-- Persistent Header -->
         <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-main)]/80 backdrop-blur-sm">
             <div class="flex items-center">
                 <button id="toggle-left-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 mr-2 md:hidden"><i class="fa-solid fa-bars"></i></button>
@@ -99,84 +85,72 @@
             <div class="flex items-center space-x-2">
                 <div class="relative">
                     <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)]">
-                        <!-- Options will be populated by JavaScript -->
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] pointer-events-none"></i>
                 </div>
             </div>
         </header>
 
-        <!-- Chatbot View -->
-        <div id="chatbot-view" class="flex flex-col h-full">
-            <div id="chat-history" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
-                 <div id="welcome-message" class="text-center pt-16">
-                    <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg"><i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i></div>
-                    <h1 class="text-4xl font-bold font-['Space_Grotesk']">FugthAI</h1>
-                    <p class="text-[var(--text-secondary)] mt-2">How can I help you today?</p>
-                </div>
+        <div id="chatbot-view" class="flex flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+             <div id="welcome-message" class="text-center pt-16">
+                <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg"><i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i></div>
+                <h1 class="text-4xl font-bold font-['Space_Grotesk']">FugthAI</h1>
+                <p class="text-[var(--text-secondary)] mt-2">How can I help you today?</p>
             </div>
-            <footer class="p-4 flex-shrink-0 bg-transparent">
-                <div class="max-w-4xl mx-auto">
-                    <div id="status-bar" class="h-5 mb-2 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                        <div id="status-dot" class="w-2 h-2 rounded-full"></div><span id="status-text"></span>
-                    </div>
-                    <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)]">
-                        <label for="file-input" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" title="Upload File"><i class="fa-solid fa-paperclip text-[var(--text-secondary)]"></i></label>
-                        <input type="file" id="file-input" class="hidden">
-                        <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…"></textarea>
-                        <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
-                    </div>
-                </div>
-            </footer>
+            <div id="chat-history" class="space-y-6"></div>
         </div>
 
-        <!-- Workspace View -->
-        <div id="workspace-view" class="hidden flex-col h-full p-4 md:p-6 overflow-y-auto">
-             <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-                <!-- Left Panel: Outline -->
-                <div class="flex flex-col bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
-                    <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Project Outline</h3>
-                    <p class="text-sm text-[var(--text-secondary)] mb-4">Map out your project ideas, features, and notes here.</p>
-                    <textarea id="workspace-outline" class="w-full flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"></textarea>
+        <div id="workspace-view" class="hidden flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
+                <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Project Outline</h3>
+                <p class="text-sm text-[var(--text-secondary)] mb-4">Map out your project ideas, features, and notes here.</p>
+                <textarea id="workspace-outline" class="w-full h-48 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+            </div>
+            <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
+                <h3 class="text-lg font-bold font-['Space_Grotesk']">AI Generation Controls</h3>
+                <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md my-4 space-y-3">
+                    <div>
+                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">
+                            Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span>
+                        </label>
+                        <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    </div>
+                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script
+                    </button>
                 </div>
-                <!-- Right Panel: AI Generated Script -->
-                <div class="flex flex-col bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-lg font-bold font-['Space_Grotesk']">AI-Generated Script</h3>
-                    </div>
-                    <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md mb-4 space-y-3">
-                        <div>
-                            <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">
-                                Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span>
-                            </label>
-                            <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-                        </div>
-                        <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
-                            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script
-                        </button>
-                    </div>
-                    <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm overflow-y-auto">
-                        <pre><code id="workspace-script" class="language-plaintext"></code></pre>
-                    </div>
+                 <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
+                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[200px] overflow-auto">
+                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet.</code></pre>
                 </div>
-             </div>
+            </div>
         </div>
+        
+        <footer id="chatbot-footer" class="p-4 flex-shrink-0 bg-transparent">
+            <div class="max-w-4xl mx-auto">
+                <div id="status-bar" class="h-5 mb-2 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                    <div id="status-dot" class="w-2 h-2 rounded-full"></div><span id="status-text"></span>
+                </div>
+                <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)]">
+                    <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…"></textarea>
+                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </footer>
     </main>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const $ = sel => document.querySelector(sel);
 
-    // --- CONFIGURATION ---
     const HUGGING_FACE_URL = "https://fugthchat-fugth-founder-ai.hf.space";
     
     const LOCAL_STORAGE_KEY = {
-        CHATS: 'fugthai_chats_v21',
-        THEME: 'fugthai_theme_v21',
-        PROJECTS: 'fugthai_projects_v21'
+        CHATS: 'fugthai_chats_v22',
+        THEME: 'fugthai_theme_v22',
+        PROJECTS: 'fugthai_projects_v22'
     };
     
-    // --- STATE MANAGEMENT ---
     let state = {
         chats: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY.CHATS) || '[]'),
         projects: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY.PROJECTS) || '[]'),
@@ -189,17 +163,15 @@ document.addEventListener('DOMContentLoaded', () => {
         theme: localStorage.getItem(LOCAL_STORAGE_KEY.THEME) || 'light',
     };
 
-    // --- ELEMENT MAPPING ---
     const el = {};
     const elIds = [
         'left-sidebar', 'toggle-left-sidebar', 'sidebar-overlay', 'theme-btn',
         'chatbot-tab-btn', 'workspace-tab-btn', 'view-title',
         'chatbot-sidebar-content', 'workspace-sidebar-content',
         'chatbot-view', 'workspace-view', 'chat-history', 'welcome-message',
-        'prompt-input', 'send-btn', 'file-input', 'model-switcher',
+        'prompt-input', 'send-btn', 'model-switcher', 'chatbot-footer',
         'status-bar', 'status-text', 'status-dot',
         'new-chat-btn', 'chat-list', 'new-project-btn', 'project-list',
-        'import-btn', 'import-input', 'export-btn',
         'workspace-outline', 'workspace-script', 'generate-script-btn',
         'workspace-script-container', 'line-count-slider', 'line-count-value'
     ];
@@ -208,21 +180,18 @@ document.addEventListener('DOMContentLoaded', () => {
         el[camelCaseId] = document.getElementById(id);
     });
 
-    // --- INITIALIZATION ---
     function init() {
         applyTheme();
         addEventListeners();
-        checkServerStatus(); // This will also populate the model switcher
+        checkServerStatus();
     }
 
-    // --- DATA & STATE HELPERS ---
     const save = {
         chats: () => localStorage.setItem(LOCAL_STORAGE_KEY.CHATS, JSON.stringify(state.chats)),
         projects: () => localStorage.setItem(LOCAL_STORAGE_KEY.PROJECTS, JSON.stringify(state.projects)),
         theme: () => localStorage.setItem(LOCAL_STORAGE_KEY.THEME, state.theme)
     };
 
-    // --- UI RENDERING ---
     function applyTheme() {
         document.documentElement.setAttribute('data-theme', state.theme);
         el.themeBtn.innerHTML = state.theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
@@ -246,8 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
         el.workspaceTabBtn.classList.toggle('active', !isChatbot);
 
         el.chatbotView.style.display = isChatbot ? 'flex' : 'none';
+        el.chatbotFooter.style.display = isChatbot ? 'block' : 'none';
         el.workspaceView.style.display = !isChatbot ? 'flex' : 'none';
-
+        
         el.chatbotSidebarContent.style.display = isChatbot ? 'flex' : 'none';
         el.workspaceSidebarContent.style.display = !isChatbot ? 'flex' : 'none';
 
@@ -301,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         el.chatHistory.appendChild(messageContainer);
         addCodeCopyButtons(messageContainer);
-        el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
+        el.chatbotView.scrollTop = el.chatbotView.scrollHeight;
         return messageContainer;
     }
     
@@ -321,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- CORE LOGIC ---
     function selectChat(id) {
         if (!id) return;
         state.activeChatId = id;
@@ -343,7 +312,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!id) {
             el.viewTitle.textContent = "Workspace";
             el.workspaceOutline.value = "";
-            el.workspaceScript.textContent = "";
+            el.workspaceScript.textContent = "Select or create a project.";
+            hljs.highlightElement(el.workspaceScript);
             return;
         }
         state.activeProjectId = id;
@@ -351,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (project) {
             el.viewTitle.textContent = project.name;
             el.workspaceOutline.value = project.outline;
-            el.workspaceScript.textContent = project.script;
+            el.workspaceScript.textContent = project.script || "No script generated yet.";
             hljs.highlightElement(el.workspaceScript);
         }
         renderProjectList();
@@ -447,6 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             
+            targetElement.textContent = ''; 
+            
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -457,8 +429,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
                 }
-                const scrollableParent = targetElement.closest('.overflow-y-auto');
-                if (scrollableParent) scrollableParent.scrollTop = scrollableParent.scrollHeight;
             }
             
             if (targetElement.tagName === 'CODE') {
@@ -481,7 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- EVENT HANDLERS ---
     async function handleSend() {
         const promptText = el.promptInput.value.trim();
         if (!promptText || state.isGenerating) return;
@@ -531,7 +500,6 @@ Generate the complete script now.
 <|assistant|>
 `.trim();
         
-        el.workspaceScript.textContent = '';
         getAiResponse(prompt, el.workspaceScript, (response) => {
             project.script = response;
             save.projects();
