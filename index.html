@@ -45,7 +45,6 @@
         .action-btn:hover { background-color: rgba(0,0,0,0.05); }
         html[data-theme="dark"] .action-btn:hover { background-color: rgba(255,255,255,0.1); }
         .action-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
-
     </style>
 </head>
 <body class="flex h-screen overflow-hidden antialiased">
@@ -108,26 +107,36 @@
         <div id="workspace-view" class="hidden flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
                 <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Project Outline</h3>
-                <p class="text-sm text-[var(--text-secondary)] mb-4">Map out your project ideas, features, and notes here.</p>
-                <textarea id="workspace-outline" class="w-full h-48 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                <textarea id="workspace-outline" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
             </div>
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
                 <h3 class="text-lg font-bold font-['Space_Grotesk']">AI Generation Controls</h3>
                 <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md my-4 space-y-3">
                     <div>
-                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">
-                            Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span>
-                        </label>
+                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span></label>
                         <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                     </div>
-                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
-                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script
-                    </button>
+                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script</button>
                 </div>
                  <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
                 <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[200px] overflow-auto">
                     <pre><code id="workspace-script" class="language-plaintext">No script generated yet.</code></pre>
                 </div>
+            </div>
+             <!-- NEW: Debugging Assistant -->
+            <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
+                <h3 class="text-lg font-bold font-['Space_Grotesk']">Debugging Assistant</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label for="error-log" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Error Log</label>
+                        <textarea id="error-log" placeholder="Paste the full error message here..." class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                    </div>
+                    <div>
+                        <label for="debug-notes" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Your Notes / Request</label>
+                        <textarea id="debug-notes" placeholder="e.g., 'The error happens when I click the button. I think the variable is not initialized.'" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                    </div>
+                </div>
+                <button id="fix-code-btn" class="mt-4 w-full py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-bug mr-2"></i>Analyze & Fix Code</button>
             </div>
         </div>
         
@@ -179,7 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'status-bar', 'status-text', 'status-dot',
         'new-chat-btn', 'chat-list', 'new-project-btn', 'project-list',
         'workspace-outline', 'workspace-script', 'generate-script-btn',
-        'workspace-script-container', 'line-count-slider', 'line-count-value'
+        'workspace-script-container', 'line-count-slider', 'line-count-value',
+        'error-log', 'debug-notes', 'fix-code-btn'
     ];
     elIds.forEach(id => {
         const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
@@ -383,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.promptInput.disabled = false;
             el.sendBtn.disabled = false;
             el.generateScriptBtn.disabled = false;
+            el.fixCodeBtn.disabled = false;
         } catch (error) {
             updateStatus('failed', `Connection Failed. Retrying...`);
             setTimeout(checkServerStatus, 5000);
@@ -409,12 +420,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const stopIcon = '<i class="fa-solid fa-stop"></i>';
         const sendIcon = '<i class="fa-solid fa-arrow-up"></i>';
         const genIcon = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script';
+        const fixIcon = '<i class="fa-solid fa-bug mr-2"></i>Analyze & Fix Code';
         
         el.sendBtn.innerHTML = isGenerating ? stopIcon : sendIcon;
         el.generateScriptBtn.innerHTML = isGenerating ? 'Stop Generating' : genIcon;
+        el.fixCodeBtn.innerHTML = isGenerating ? 'Stop Fixing' : fixIcon;
         
         el.sendBtn.disabled = isGenerating;
         el.generateScriptBtn.disabled = isGenerating;
+        el.fixCodeBtn.disabled = isGenerating;
         el.promptInput.disabled = isGenerating;
         el.modelSwitcher.disabled = isGenerating;
         
@@ -492,11 +506,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let promptText;
         if (isRedo) {
-            // Find the last user message to redo
             const lastUserMessage = [...activeChat.history].reverse().find(m => m.role === 'user');
             if (!lastUserMessage) return;
             promptText = lastUserMessage.text;
-            // Remove the last bot response before redoing
             if (activeChat.history[activeChat.history.length - 1].role === 'assistant') {
                 activeChat.history.pop();
             }
@@ -506,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeChat.history.push({ role: 'user', text: promptText });
         }
         
-        selectChat(activeChat.id); // Re-render chat history
+        selectChat(activeChat.id);
 
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
             activeChat.name = promptText.substring(0, 40) + (promptText.length > 40 ? '...' : '');
@@ -523,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newBotMessage = { role: 'assistant', text: response, duration, feedback: null };
             activeChat.history.push(newBotMessage);
             save.chats();
-            selectChat(activeChat.id); // Final re-render with all actions
+            selectChat(activeChat.id);
         });
     }
 
@@ -555,6 +567,49 @@ Generate the complete script now.
         });
     }
 
+    async function handleFixCode() {
+        const project = state.projects.find(p => p.id === state.activeProjectId);
+        const errorLog = el.errorLog.value.trim();
+        const debugNotes = el.debugNotes.value.trim();
+
+        if (!project || !project.script || !errorLog || state.isGenerating) {
+            alert("Please make sure there is a script to fix and an error log provided.");
+            return;
+        }
+
+        const prompt = `
+<|system|>
+You are an expert programmer and debugger. Your task is to analyze the provided code, the error message it produced, and the user's notes to identify the bug and provide a corrected, fully functional version of the script. Only output the complete, raw code for the fixed script, without any additional explanations or markdown formatting.
+</s>
+<|user|>
+Here is the script that has a bug:
+--- SCRIPT START ---
+${project.script}
+--- SCRIPT END ---
+
+When I ran this script, I got the following error:
+--- ERROR LOG START ---
+${errorLog}
+--- ERROR LOG END ---
+
+Here are my notes on how to fix it:
+--- USER NOTES START ---
+${debugNotes}
+--- USER NOTES END ---
+
+Please provide the complete, corrected script now.
+</s>
+<|assistant|>
+`.trim();
+
+        getAiResponse(prompt, el.workspaceScript, (response) => {
+            project.script = response;
+            save.projects();
+            el.errorLog.value = '';
+            el.debugNotes.value = '';
+        });
+    }
+
     function handleChatActions(e) {
         const button = e.target.closest('[data-action]');
         if (!button) return;
@@ -566,23 +621,17 @@ Generate the complete script now.
         const message = activeChat.history[messageIndex];
 
         switch(action) {
-            case 'like':
-                message.feedback = message.feedback === 'like' ? null : 'like';
-                break;
-            case 'dislike':
-                 message.feedback = message.feedback === 'dislike' ? null : 'dislike';
-                break;
-            case 'redo':
-                handleSend(true);
-                return; // Prevent re-render from below
+            case 'like': message.feedback = message.feedback === 'like' ? null : 'like'; break;
+            case 'dislike': message.feedback = message.feedback === 'dislike' ? null : 'dislike'; break;
+            case 'redo': handleSend(true); return;
             case 'copy':
                 navigator.clipboard.writeText(message.text);
                 button.innerHTML = '<i class="fa-solid fa-check"></i>';
                 setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000);
-                return; // No need to re-render for copy
+                return;
         }
         save.chats();
-        selectChat(activeChat.id); // Re-render to show active state on buttons
+        selectChat(activeChat.id);
     }
 
     function addEventListeners() {
@@ -594,6 +643,7 @@ Generate the complete script now.
         el.sendBtn.onclick = () => handleSend(false);
         el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(false); }});
         el.generateScriptBtn.onclick = handleGenerateScript;
+        el.fixCodeBtn.onclick = handleFixCode;
         el.lineCountSlider.addEventListener('input', (e) => { el.lineCountValue.textContent = e.target.value; });
         el.chatHistory.addEventListener('click', handleChatActions);
         el.chatList.addEventListener('click', (e) => { const item = e.target.closest('.chat-item'); if (item) selectChat(parseInt(item.dataset.chatId)); });
