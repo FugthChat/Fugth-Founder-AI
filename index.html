@@ -41,6 +41,11 @@
         .sidebar { transition: width 0.3s ease, transform 0.3s ease; }
         .tab-btn.active { background-color: var(--accent); color: white; }
         .tab-btn { color: var(--text-secondary); }
+        .action-btn { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .action-btn:hover { background-color: rgba(0,0,0,0.05); }
+        html[data-theme="dark"] .action-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .action-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
+
     </style>
 </head>
 <body class="flex h-screen overflow-hidden antialiased">
@@ -146,9 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const HUGGING_FACE_URL = "https://fugthchat-fugth-founder-ai.hf.space";
     
     const LOCAL_STORAGE_KEY = {
-        CHATS: 'fugthai_chats_v22',
-        THEME: 'fugthai_theme_v22',
-        PROJECTS: 'fugthai_projects_v22'
+        CHATS: 'fugthai_chats_v23',
+        THEME: 'fugthai_theme_v23',
+        PROJECTS: 'fugthai_projects_v23'
     };
     
     let state = {
@@ -161,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isGenerating: false,
         abortController: null,
         theme: localStorage.getItem(LOCAL_STORAGE_KEY.THEME) || 'light',
+        thinkingTimerInterval: null,
     };
 
     const el = {};
@@ -251,21 +257,38 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
-    function addMessageToHistory(role, text) {
+    function addMessageToHistory(role, text, options = {}) {
+        const { index, duration, feedback } = options;
         el.welcomeMessage.style.display = 'none';
         const who = role === 'user' ? 'You' : 'FugthAI';
         const avatarIcon = role === 'user' ? 'fa-user' : 'fa-brain';
         const messageBg = role === 'user' ? 'bg-[var(--bg-message-user)]' : 'bg-[var(--bg-message-bot)]';
+        
         const messageContainer = document.createElement('div');
         messageContainer.className = 'message-container flex items-start gap-4';
+        messageContainer.dataset.messageIndex = index;
         
         const contentHTML = text ? marked.parse(text) : '<span class="blinking-cursor">▍</span>';
         
+        const durationHTML = duration ? `<span class="text-xs text-[var(--text-secondary)] ml-auto">Generated in ${(duration / 1000).toFixed(1)}s</span>` : '';
+        const actionsHTML = role === 'assistant' ? `
+            <div class="flex items-center gap-2 mt-2">
+                <button data-action="like" class="action-btn p-1 rounded-md ${feedback === 'like' ? 'active' : ''}"><i class="fa-solid fa-thumbs-up"></i></button>
+                <button data-action="dislike" class="action-btn p-1 rounded-md ${feedback === 'dislike' ? 'active' : ''}"><i class="fa-solid fa-thumbs-down"></i></button>
+                <button data-action="redo" class="action-btn p-1 rounded-md"><i class="fa-solid fa-rotate-right"></i></button>
+                <button data-action="copy" class="action-btn p-1 rounded-md"><i class="fa-solid fa-copy"></i></button>
+                ${durationHTML}
+            </div>
+        ` : '';
+
         messageContainer.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>
-            <div class="flex-1 p-4 rounded-xl ${messageBg} border border-[var(--border-color)]">
-                <strong class="text-sm font-semibold mb-2 block">${who}</strong>
-                <div class="prose max-w-none text-content">${contentHTML}</div>
+            <div class="flex-1">
+                <div class="p-4 rounded-xl ${messageBg} border border-[var(--border-color)]">
+                    <strong class="text-sm font-semibold mb-2 block">${who}</strong>
+                    <div class="prose max-w-none text-content">${contentHTML}</div>
+                </div>
+                ${actionsHTML}
             </div>
         `;
         
@@ -302,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.welcomeMessage.style.display = 'block';
             } else {
                 el.welcomeMessage.style.display = 'none';
-                chat.history.forEach(m => addMessageToHistory(m.role, m.text));
+                chat.history.forEach((m, i) => addMessageToHistory(m.role, m.text, { ...m, index: i }));
             }
         }
         renderChatList();
@@ -379,8 +402,10 @@ document.addEventListener('DOMContentLoaded', () => {
         el.statusDot.classList.toggle('animate-pulse', newStatus.pulse);
     }
 
-    function setGenerating(isGenerating) {
+    function setGenerating(isGenerating, startTime) {
         state.isGenerating = isGenerating;
+        clearInterval(state.thinkingTimerInterval);
+
         const stopIcon = '<i class="fa-solid fa-stop"></i>';
         const sendIcon = '<i class="fa-solid fa-arrow-up"></i>';
         const genIcon = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script';
@@ -393,12 +418,20 @@ document.addEventListener('DOMContentLoaded', () => {
         el.promptInput.disabled = isGenerating;
         el.modelSwitcher.disabled = isGenerating;
         
-        updateStatus(isGenerating ? 'generating' : 'connected', isGenerating ? 'Assistant is thinking...' : 'AI Server Online');
+        if(isGenerating) {
+            state.thinkingTimerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                updateStatus('generating', `Assistant is thinking... (${elapsed}s)`);
+            }, 100);
+        } else {
+             updateStatus('connected', 'AI Server Online');
+        }
     }
 
     async function getAiResponse(prompt, targetElement, saveCallback) {
         const selectedModel = el.modelSwitcher.value;
-        setGenerating(true);
+        const startTime = Date.now();
+        setGenerating(true, startTime);
 
         state.abortController = new AbortController();
         let fullResponse = "";
@@ -431,6 +464,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
+            const duration = Date.now() - startTime;
+
             if (targetElement.tagName === 'CODE') {
                 targetElement.textContent = fullResponse;
                 hljs.highlightElement(targetElement);
@@ -439,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addCodeCopyButtons(targetElement);
             }
 
-            if (saveCallback) saveCallback(fullResponse);
+            if (saveCallback) saveCallback(fullResponse, duration);
 
         } catch (e) {
             const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}`;
@@ -451,30 +486,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function handleSend() {
-        const promptText = el.promptInput.value.trim();
-        if (!promptText || state.isGenerating) return;
-
+    async function handleSend(isRedo = false) {
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
-        if (!activeChat) return;
+        if (!activeChat || state.isGenerating) return;
 
-        activeChat.history.push({ role: 'user', text: promptText });
-        addMessageToHistory('user', promptText);
+        let promptText;
+        if (isRedo) {
+            // Find the last user message to redo
+            const lastUserMessage = [...activeChat.history].reverse().find(m => m.role === 'user');
+            if (!lastUserMessage) return;
+            promptText = lastUserMessage.text;
+            // Remove the last bot response before redoing
+            if (activeChat.history[activeChat.history.length - 1].role === 'assistant') {
+                activeChat.history.pop();
+            }
+        } else {
+            promptText = el.promptInput.value.trim();
+            if (!promptText) return;
+            activeChat.history.push({ role: 'user', text: promptText });
+        }
         
+        selectChat(activeChat.id); // Re-render chat history
+
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
             activeChat.name = promptText.substring(0, 40) + (promptText.length > 40 ? '...' : '');
             renderChatList();
             el.viewTitle.textContent = activeChat.name;
         }
         
-        const assistantMessageContainer = addMessageToHistory('assistant', '');
+        const assistantMessageContainer = addMessageToHistory('assistant', '', { index: activeChat.history.length });
         el.promptInput.value = '';
         el.promptInput.style.height = 'auto';
 
         const promptForApi = `<|system|>\nYou are a helpful AI assistant.</s>\n<|user|>\n${promptText}</s>\n<|assistant|>\n`;
-        getAiResponse(promptForApi, assistantMessageContainer, (response) => {
-            activeChat.history.push({ role: 'assistant', text: response });
+        getAiResponse(promptForApi, assistantMessageContainer, (response, duration) => {
+            const newBotMessage = { role: 'assistant', text: response, duration, feedback: null };
+            activeChat.history.push(newBotMessage);
             save.chats();
+            selectChat(activeChat.id); // Final re-render with all actions
         });
     }
 
@@ -506,30 +555,48 @@ Generate the complete script now.
         });
     }
 
-    function addEventListeners() {
-        el.themeBtn.onclick = () => {
-            state.theme = state.theme === 'dark' ? 'light' : 'dark';
-            applyTheme();
-        };
+    function handleChatActions(e) {
+        const button = e.target.closest('[data-action]');
+        if (!button) return;
 
+        const action = button.dataset.action;
+        const messageContainer = button.closest('.message-container');
+        const messageIndex = parseInt(messageContainer.dataset.messageIndex);
+        const activeChat = state.chats.find(c => c.id === state.activeChatId);
+        const message = activeChat.history[messageIndex];
+
+        switch(action) {
+            case 'like':
+                message.feedback = message.feedback === 'like' ? null : 'like';
+                break;
+            case 'dislike':
+                 message.feedback = message.feedback === 'dislike' ? null : 'dislike';
+                break;
+            case 'redo':
+                handleSend(true);
+                return; // Prevent re-render from below
+            case 'copy':
+                navigator.clipboard.writeText(message.text);
+                button.innerHTML = '<i class="fa-solid fa-check"></i>';
+                setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000);
+                return; // No need to re-render for copy
+        }
+        save.chats();
+        selectChat(activeChat.id); // Re-render to show active state on buttons
+    }
+
+    function addEventListeners() {
+        el.themeBtn.onclick = () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
         el.chatbotTabBtn.onclick = () => switchTab('chatbot');
         el.workspaceTabBtn.onclick = () => switchTab('workspace');
         el.newChatBtn.onclick = createNewChat;
         el.newProjectBtn.onclick = () => createNewProject(false);
-
-        el.sendBtn.onclick = handleSend;
-        el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }});
-        
+        el.sendBtn.onclick = () => handleSend(false);
+        el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(false); }});
         el.generateScriptBtn.onclick = handleGenerateScript;
-        el.lineCountSlider.addEventListener('input', (e) => {
-            el.lineCountValue.textContent = e.target.value;
-        });
-        
-        el.chatList.addEventListener('click', (e) => {
-            const item = e.target.closest('.chat-item');
-            if (item) selectChat(parseInt(item.dataset.chatId));
-        });
-
+        el.lineCountSlider.addEventListener('input', (e) => { el.lineCountValue.textContent = e.target.value; });
+        el.chatHistory.addEventListener('click', handleChatActions);
+        el.chatList.addEventListener('click', (e) => { const item = e.target.closest('.chat-item'); if (item) selectChat(parseInt(item.dataset.chatId)); });
         el.projectList.addEventListener('click', (e) => {
             const item = e.target.closest('.project-item');
             if (e.target.closest('[data-action="delete-project"]')) {
@@ -548,7 +615,6 @@ Generate the complete script now.
                 selectProject(parseInt(item.dataset.projectId));
             }
         });
-        
         el.workspaceOutline.addEventListener('input', () => {
              const project = state.projects.find(p => p.id === state.activeProjectId);
              if (project) {
