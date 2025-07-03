@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    
+
     <style>
         :root, html[data-theme="light"] {
             --bg-main: #f4f7f9; --bg-sidebar: #ffffff; --bg-input: #ffffff; --bg-menu: #ffffff;
@@ -39,410 +39,338 @@
         .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #374151; color: #9ca3af; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8em; opacity: 0; transition: opacity 0.2s; }
         .prose pre:hover .copy-btn { opacity: 1; }
         .sidebar { transition: width 0.3s ease, transform 0.3s ease; }
-        @media (min-width: 768px) {
-            #left-sidebar, #right-sidebar { width: 5rem; }
-            #left-sidebar:hover, #right-sidebar:hover { width: 18rem; }
-            main { margin-left: 5rem; margin-right: 5rem; transition: margin 0.3s ease; }
-            #left-sidebar:hover ~ main { margin-left: 18rem; }
-            #right-sidebar:hover ~ main { margin-right: 18rem; }
-            #left-sidebar:hover, #right-sidebar:hover { z-index: 25; }
-            .sidebar-text, .sidebar-brand-text { opacity: 0; transition: opacity 0.2s 0.1s ease; white-space: nowrap; }
-            #left-sidebar:hover .sidebar-text, #left-sidebar:hover .sidebar-brand-text, #right-sidebar:hover .sidebar-text { opacity: 1; }
-        }
-        @media (max-width: 767.98px) {
-            .sidebar { position: fixed; top: 0; bottom: 0; z-index: 40; width: 18rem; }
-            #left-sidebar { transform: translateX(-100%); }
-            #left-sidebar.open { transform: translateX(0); }
-            #right-sidebar { right:0; transform: translateX(100%); }
-            #right-sidebar.open { transform: translateX(0); }
-            #sidebar-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-            #sidebar-overlay.open { opacity: 1; pointer-events: auto; }
-        }
+        .tab-btn.active { background-color: var(--accent); color: white; }
+        .tab-btn { color: var(--text-secondary); }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden antialiased">
-    <div id="sidebar-overlay"></div>
-    <!-- Left Sidebar -->
-    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-30 opacity-0 pointer-events-none transition-opacity md:hidden"></div>
+    
+    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0 md:w-20 md:hover:w-72">
         <div class="flex items-center mb-6 flex-shrink-0">
             <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="text-[var(--accent)] sidebar-brand-text">AI</span></h1>
             <button id="theme-btn" class="hover:bg-black/10 dark:hover:bg-white/10 p-2 rounded-full text-lg ml-auto"><i class="fa-solid fa-moon"></i></button>
         </div>
-        <div id="sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
+
+        <div class="flex border border-[var(--border-color)] rounded-lg p-1 mb-4">
+            <button id="chatbot-tab-btn" class="tab-btn active w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-comments"></i><span class="ml-2 sidebar-text font-semibold">Chatbot</span>
+            </button>
+            <button id="workspace-tab-btn" class="tab-btn w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center">
+                <i class="fa-solid fa-lightbulb"></i><span class="ml-2 sidebar-text font-semibold">Workspace</span>
+            </button>
+        </div>
+
+        <div id="chatbot-sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
             <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
                 <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span>
             </button>
             <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
-        <div class="pt-4 border-t border-[var(--border-color)] space-y-1 text-sm">
-            <button id="import-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-file-import w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Import Chats</span></button>
-            <input type="file" id="import-chats-input" class="hidden" accept=".json">
-            <button id="export-chats-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-file-export w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Export All Chats</span></button>
-            <button id="help-btn" class="w-full flex items-center py-2 px-3 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-circle-question w-6 text-[var(--text-secondary)]"></i><span class="ml-2 sidebar-text">Help & FAQ</span></button>
+        
+        <div id="workspace-sidebar-content" class="hidden flex-col flex-1 overflow-y-auto -mr-4 pr-4">
+            <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span>
+            </button>
+            <nav id="project-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
     </aside>
 
-    <!-- Main Chat Area -->
     <main class="flex-1 flex flex-col min-w-0 relative">
         <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-main)]/80 backdrop-blur-sm">
             <div class="flex items-center">
                 <button id="toggle-left-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 mr-2 md:hidden"><i class="fa-solid fa-bars"></i></button>
-                <h2 id="chat-title" class="font-semibold truncate text-lg">New Chat</h2>
+                <h2 id="view-title" class="font-semibold truncate text-lg">New Chat</h2>
             </div>
             <div class="flex items-center space-x-2">
                 <div class="relative">
                     <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)]">
-                        <option value="fugth_hanh">Fugth1.1-Hanh (Everyday)</option>
-                        <option value="fugth_p8">Fugth1.1-P8 (Coding)</option>
-                        <option value="high">Fugth1.3-High</option>
-                        <option value="lite">Fugth1.4-Lite</option>
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] pointer-events-none"></i>
                 </div>
-                <button id="toggle-right-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10"><i class="fa-solid fa-sliders"></i></button>
             </div>
         </header>
-        
-        <div id="chat-history" class="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
-            <div id="welcome-message" class="text-center pt-16">
-                 <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg"><i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i></div>
+
+        <div id="chatbot-view" class="flex flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+             <div id="welcome-message" class="text-center pt-16">
+                <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg"><i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i></div>
                 <h1 class="text-4xl font-bold font-['Space_Grotesk']">FugthAI</h1>
                 <p class="text-[var(--text-secondary)] mt-2">How can I help you today?</p>
             </div>
+            <div id="chat-history" class="space-y-6"></div>
+        </div>
+
+        <div id="workspace-view" class="hidden flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
+                <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Project Outline</h3>
+                <p class="text-sm text-[var(--text-secondary)] mb-4">Map out your ideas, features, and notes here.</p>
+                <textarea id="workspace-outline" class="w-full h-48 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+            </div>
+            <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
+                <h3 class="text-lg font-bold font-['Space_Grotesk']">AI Generation Controls</h3>
+                <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md my-4 space-y-3">
+                    <div>
+                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">
+                            Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span>
+                        </label>
+                        <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                    </div>
+                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script
+                    </button>
+                </div>
+                 <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
+                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[200px] overflow-auto">
+                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet.</code></pre>
+                </div>
+            </div>
         </div>
         
-        <footer class="p-4 flex-shrink-0 bg-transparent">
+        <footer id="chatbot-footer" class="p-4 flex-shrink-0 bg-transparent">
             <div class="max-w-4xl mx-auto">
                 <div id="status-bar" class="h-5 mb-2 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                    <div id="status-dot" class="w-2 h-2 rounded-full"></div>
-                    <span id="status-text"></span>
+                    <div id="status-dot" class="w-2 h-2 rounded-full"></div><span id="status-text"></span>
                 </div>
                 <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)]">
-                    <button id="quick-prompts-btn" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10" title="Quick Prompts"><i class="fa-solid fa-bolt text-[var(--text-secondary)]"></i></button>
-                    <label for="file-input" class="p-3 rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" title="Upload File"><i class="fa-solid fa-paperclip text-[var(--text-secondary)]"></i></label>
-                    <input type="file" id="file-input" class="hidden" accept=".txt,.js,.py,.html,.css,.json,.csv,.md">
-                    <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…" disabled></textarea>
-                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50" disabled><i class="fa-solid fa-arrow-up"></i></button>
+                    <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…"></textarea>
+                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
                 </div>
             </div>
         </footer>
     </main>
-    
-    <aside id="right-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-l border-[var(--border-color)] flex-shrink-0">
-         <h3 class="font-bold text-lg font-['Space_Grotesk'] sidebar-text mb-4">Settings</h3>
-         <div class="space-y-4 sidebar-text">
-            <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5">
-                <h3 class="font-semibold text-[var(--text-primary)] mb-2">Persona</h3>
-                <select id="persona-select" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></select>
-            </div>
-            <div class="p-4 rounded-lg bg-black/5 dark:bg-white/5">
-                <h3 class="font-semibold text-[var(--text-primary)] mb-2">System Prompt</h3>
-                <textarea id="system-prompt-input" rows="12" class="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></textarea>
-            </div>
-            <button id="clear-history-btn" class="w-full py-2 px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors text-sm flex items-center justify-center font-semibold">
-                <i class="fa-solid fa-trash-can mr-2"></i>Clear Chat
-            </button>
-         </div>
-    </aside>
-
-    <div id="quick-prompts-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-[var(--bg-menu)] p-6 rounded-xl border border-[var(--border-color)] shadow-lg w-full max-w-2xl relative">
-            <button id="modal-close-x" class="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl font-bold">&times;</button>
-            <h3 class="text-lg font-bold text-[var(--accent)] mb-4">Quick Prompts</h3>
-            <div id="quick-prompts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto"></div>
-        </div>
-    </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const $ = sel => document.querySelector(sel);
 
-    const HUGGING_FACE_URL = 'https://fugthchat-fugth-founder-ai.hf.space';
-    const MAX_CONTEXT_TOKENS = 2048;
-    const LOCAL_STORAGE_KEY_CHATS = 'fugthai_chats_v18';
-    const LOCAL_STORAGE_KEY_THEME = 'fugthai_theme_v18';
-
-    const PERSONAS = {
-        default: { name: 'Default Assistant', prompt: 'You are FugthAI, a helpful, friendly, and versatile AI assistant. Provide clear, concise, and accurate information. Format your responses using markdown.' },
-        code: { name: 'Code Expert', prompt: 'You are an expert programmer. Provide clean, efficient, and well-documented code snippets. Explain the code clearly. Always use markdown for formatting code blocks with the correct language identifier.' },
-        creative: { name: 'Creative Writer', prompt: 'You are a creative writer. Your goal is to help with brainstorming, writing stories, poems, and other creative tasks. Use vivid language and imaginative ideas.' },
-    };
-
-    const QUICK_PROMPTS = [
-        { title: "Explain a concept", prompt: "Explain the concept of [topic] in simple terms." },
-        { title: "Write clean code", prompt: "Write a Python function to [task]. Include comments and docstrings." },
-    ];
+    // --- CONFIGURATION ---
+    const HUGGING_FACE_URL = "https://fugthchat-fugth-founder-ai.hf.space";
     
+    const LOCAL_STORAGE_KEY = {
+        CHATS: 'fugthai_chats_v22',
+        THEME: 'fugthai_theme_v22',
+        PROJECTS: 'fugthai_projects_v22'
+    };
+    
+    // --- STATE MANAGEMENT ---
     let state = {
-        chats: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_CHATS) || '[]'),
+        chats: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY.CHATS) || '[]'),
+        projects: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY.PROJECTS) || '[]'),
+        availableModels: {},
         activeChatId: null,
+        activeProjectId: null,
+        activeTab: 'chatbot',
         isGenerating: false,
         abortController: null,
-        theme: localStorage.getItem(LOCAL_STORAGE_KEY_THEME) || 'light',
-        activeMenuChatId: null,
-        serverModelId: 'fugth_hanh',
+        theme: localStorage.getItem(LOCAL_STORAGE_KEY.THEME) || 'light',
     };
 
+    // --- ELEMENT MAPPING ---
     const el = {};
     const elIds = [
-        'left-sidebar', 'right-sidebar', 'toggle-left-sidebar', 'toggle-right-sidebar',
-        'chat-history', 'chat-list', 'chat-title', 'prompt-input', 'send-btn', 'file-input',
-        'model-switcher', 'status-bar', 'status-text', 'status-dot', 'new-chat-btn',
-        'clear-history-btn', 'welcome-message', 'persona-select', 'system-prompt-input',
-        'theme-btn', 'import-chats-btn', 'import-chats-input', 'export-chats-btn', 'help-btn',
-        'sidebar-overlay', 'quick-prompts-btn', 'quick-prompts-modal', 'quick-prompts-list', 'modal-close-x'
+        'left-sidebar', 'toggle-left-sidebar', 'sidebar-overlay', 'theme-btn',
+        'chatbot-tab-btn', 'workspace-tab-btn', 'view-title',
+        'chatbot-sidebar-content', 'workspace-sidebar-content',
+        'chatbot-view', 'workspace-view', 'chat-history', 'welcome-message',
+        'prompt-input', 'send-btn', 'file-input', 'model-switcher', 'chatbot-footer',
+        'status-bar', 'status-text', 'status-dot',
+        'new-chat-btn', 'chat-list', 'new-project-btn', 'project-list',
+        'import-btn', 'import-input', 'export-btn',
+        'workspace-outline', 'workspace-script', 'generate-script-btn',
+        'workspace-script-container', 'line-count-slider', 'line-count-value'
     ];
-    
-    // This function populates the 'el' object with DOM elements.
-    function mapElements() {
-        elIds.forEach(id => {
-            const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
-            el[camelCaseId] = document.getElementById(id);
-        });
-    }
+    elIds.forEach(id => {
+        const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
+        el[camelCaseId] = document.getElementById(id);
+    });
 
+    // --- INITIALIZATION ---
     function init() {
-        mapElements(); // Ensure elements are mapped before use.
-        
-        Object.keys(PERSONAS).forEach(key => el.personaSelect.add(new Option(PERSONAS[key].name, key)));
-        el.personaSelect.add(new Option("Custom", "custom"));
-        
-        el.quickPromptsList.innerHTML = '';
-        QUICK_PROMPTS.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'p-4 bg-black/5 dark:bg-white/10 rounded-lg hover:bg-black/10 dark:hover:bg-white/20 cursor-pointer transition-colors';
-            card.innerHTML = `<h4 class="font-bold text-sm text-[var(--accent)]">${p.title}</h4><p class="text-xs text-[var(--text-secondary)]">${p.prompt}</p>`;
-            card.onclick = () => {
-                el.promptInput.value = p.prompt;
-                el.quickPromptsModal.classList.add('hidden');
-                el.promptInput.focus();
-                autoResizeTextarea();
-            };
-            el.quickPromptsList.appendChild(card);
-        });
-        
-        if (state.chats.length === 0) createNewChat();
-        state.activeChatId = state.activeChatId || state.chats[0]?.id;
-        
         applyTheme();
-        renderChatList();
-        selectChat(state.activeChatId);
         addEventListeners();
         checkServerStatus();
     }
 
-    function saveChats() { localStorage.setItem(LOCAL_STORAGE_KEY_CHATS, JSON.stringify(state.chats)); }
-    
-    function createNewChat() {
-        const newChat = { 
-            id: Date.now(), name: 'New Chat', history: [], persona: 'default', 
-            system_prompt: PERSONAS['default'].prompt, pinned: false,
-        };
-        state.chats.unshift(newChat);
-        saveChats();
-        return newChat;
-    }
+    // --- DATA & STATE HELPERS ---
+    const save = {
+        chats: () => localStorage.setItem(LOCAL_STORAGE_KEY.CHATS, JSON.stringify(state.chats)),
+        projects: () => localStorage.setItem(LOCAL_STORAGE_KEY.PROJECTS, JSON.stringify(state.projects)),
+        theme: () => localStorage.setItem(LOCAL_STORAGE_KEY.THEME, state.theme)
+    };
 
+    // --- UI RENDERING ---
     function applyTheme() {
         document.documentElement.setAttribute('data-theme', state.theme);
-        localStorage.setItem(LOCAL_STORAGE_KEY_THEME, state.theme);
         el.themeBtn.innerHTML = state.theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        save.theme();
+    }
+    
+    function populateModelSwitcher() {
+        el.modelSwitcher.innerHTML = '';
+        for (const modelId in state.availableModels) {
+            const model = state.availableModels[modelId];
+            const option = new Option(model.name, modelId);
+            el.modelSwitcher.add(option);
+        }
+    }
+
+    function switchTab(tab) {
+        state.activeTab = tab;
+        const isChatbot = tab === 'chatbot';
+        
+        el.chatbotTabBtn.classList.toggle('active', isChatbot);
+        el.workspaceTabBtn.classList.toggle('active', !isChatbot);
+
+        el.chatbotView.style.display = isChatbot ? 'flex' : 'none';
+        el.chatbotFooter.style.display = isChatbot ? 'block' : 'none';
+        el.workspaceView.style.display = !isChatbot ? 'flex' : 'none';
+        
+        el.chatbotSidebarContent.style.display = isChatbot ? 'flex' : 'none';
+        el.workspaceSidebarContent.style.display = !isChatbot ? 'flex' : 'none';
+
+        if (isChatbot) {
+            if (state.chats.length === 0) createNewChat();
+            selectChat(state.activeChatId || state.chats[0]?.id);
+        } else {
+            if (state.projects.length === 0) createNewProject(true);
+            selectProject(state.activeProjectId || state.projects[0]?.id);
+        }
     }
 
     function renderChatList() {
-        const sortedChats = [...state.chats].sort((a, b) => (a.pinned === b.pinned) ? b.id - a.id : a.pinned ? -1 : 1);
-        el.chatList.innerHTML = '';
-        sortedChats.forEach(c => {
-            const div = document.createElement('div');
-            div.className = `chat-item group relative flex items-center p-2 rounded-lg cursor-pointer transition-colors ${c.id === state.activeChatId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`;
-            div.dataset.chatId = c.id;
-            const pinIcon = c.pinned ? `<i class="fa-solid fa-thumbtack text-[var(--accent)] text-xs w-6 text-center"></i>` : `<i class="fa-regular fa-message w-6 text-center text-[var(--text-secondary)]"></i>`;
-            div.innerHTML = `<div class="w-6 text-center">${pinIcon}</div><span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${c.name}</span><button data-action="toggle-menu" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-black/10 dark:hover:bg-white/10 sidebar-text"><i class="fa-solid fa-ellipsis-h"></i></button>`;
-            el.chatList.appendChild(div);
-        });
+        const sortedChats = [...state.chats].sort((a, b) => b.id - a.id);
+        el.chatList.innerHTML = sortedChats.map(c => `
+            <div class="chat-item group relative flex items-center p-2 rounded-lg cursor-pointer ${c.id === state.activeChatId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}" data-chat-id="${c.id}">
+                <i class="fa-regular fa-message w-6 text-center text-[var(--text-secondary)]"></i>
+                <span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${c.name}</span>
+            </div>
+        `).join('');
     }
 
-    function selectChat(id) {
-        if (!id && state.chats.length > 0) id = state.chats[0].id;
-        if (!id) return;
-        state.activeChatId = id;
-        renderChatList();
-        const chat = state.chats.find(c => c.id === id);
-        if (chat) {
-            el.chatTitle.textContent = chat.name;
-            el.systemPromptInput.value = chat.system_prompt;
-            el.personaSelect.value = chat.persona || 'custom';
-            el.chatHistory.innerHTML = '';
-            el.welcomeMessage.classList.toggle('hidden', chat.history.length > 0);
-            chat.history.forEach((m, i) => addMessage(m.role, m.text, { ...m, index: i }, false));
-            scrollToBottom();
-        }
+    function renderProjectList() {
+        const sortedProjects = [...state.projects].sort((a, b) => b.id - a.id);
+        el.projectList.innerHTML = sortedProjects.map(p => `
+            <div class="project-item group relative flex items-center p-2 rounded-lg cursor-pointer ${p.id === state.activeProjectId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}" data-project-id="${p.id}">
+                <i class="fa-regular fa-folder w-6 text-center text-[var(--text-secondary)]"></i>
+                <span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${p.name}</span>
+                <button data-action="delete-project" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-red-500/10 text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        `).join('');
     }
-    
-    function addMessage(role, text, options = {}, save = true) {
-        const { isError = false, feedback = null, index = -1, duration = null } = options;
-        el.welcomeMessage.classList.add('hidden');
-        const activeChat = state.chats.find(c => c.id === state.activeChatId);
-        if (!activeChat) return null;
 
+    function addMessageToHistory(role, text) {
+        el.welcomeMessage.style.display = 'none';
         const who = role === 'user' ? 'You' : 'FugthAI';
         const avatarIcon = role === 'user' ? 'fa-user' : 'fa-brain';
         const messageBg = role === 'user' ? 'bg-[var(--bg-message-user)]' : 'bg-[var(--bg-message-bot)]';
         const messageContainer = document.createElement('div');
         messageContainer.className = 'message-container flex items-start gap-4';
         
-        const avatar = `<div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>`;
+        const contentHTML = text ? marked.parse(text) : '<span class="blinking-cursor">▍</span>';
         
-        const bubble = document.createElement('div');
-        bubble.className = `flex-1 p-4 rounded-xl ${messageBg} border border-[var(--border-color)]`;
+        messageContainer.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>
+            <div class="flex-1 p-4 rounded-xl ${messageBg} border border-[var(--border-color)]">
+                <strong class="text-sm font-semibold mb-2 block">${who}</strong>
+                <div class="prose max-w-none text-content">${contentHTML}</div>
+            </div>
+        `;
         
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'prose max-w-none text-content';
-        contentDiv.innerHTML = text ? marked.parse(text) : '<span class="blinking-cursor">▍</span>';
-
-        bubble.innerHTML = `<strong class="text-sm font-semibold mb-2 block">${who}</strong>`;
-        bubble.appendChild(contentDiv);
-        
-        messageContainer.innerHTML = avatar;
-        messageContainer.appendChild(bubble);
-
         el.chatHistory.appendChild(messageContainer);
-        addCodeCopyButtons(contentDiv);
-        scrollToBottom();
-
-        if (save && !isError) {
-            activeChat.history.push({ role, text, duration, feedback: null });
-            saveChats();
-        }
+        addCodeCopyButtons(messageContainer);
+        el.chatbotView.scrollTop = el.chatbotView.scrollHeight;
         return messageContainer;
     }
-
+    
     function addCodeCopyButtons(container) {
         container.querySelectorAll('pre').forEach(pre => {
-            if (pre.querySelector('.copy-btn')) return;
-            const code = pre.querySelector('code');
-            if (code) {
-                const btn = document.createElement('button');
-                btn.className = 'copy-btn';
-                btn.textContent = 'Copy';
-                btn.onclick = () => {
-                    navigator.clipboard.writeText(code.innerText).then(() => {
-                        btn.textContent = 'Copied!';
-                        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-                    });
-                };
-                pre.appendChild(btn);
-            }
+            if (pre.querySelector('.copy-btn') || !pre.querySelector('code')) return;
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
+            btn.onclick = () => {
+                navigator.clipboard.writeText(pre.querySelector('code').innerText).then(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                    setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 2000);
+                });
+            };
+            pre.appendChild(btn);
         });
     }
 
-    function buildPrompt() {
-        const activeChat = state.chats.find(c => c.id === state.activeChatId);
-        if (!activeChat) return "";
-        let tokenCount = 0;
-        const messagesForPrompt = [];
-        const countTokens = (str) => Math.ceil(str.length / 4);
-
-        const systemPrompt = `<|system|>\n${activeChat.system_prompt}</s>\n`;
-        tokenCount += countTokens(systemPrompt);
-
-        const reversedHistory = [...activeChat.history].reverse();
-        for (const msg of reversedHistory) {
-            const formattedMsg = msg.role === 'user' ? `<|user|>\n${msg.text}</s>\n` : `<|assistant|>\n${msg.text}</s>\n`;
-            const msgTokenCount = countTokens(formattedMsg);
-            if (tokenCount + msgTokenCount < MAX_CONTEXT_TOKENS) {
-                messagesForPrompt.unshift(formattedMsg);
-                tokenCount += msgTokenCount;
+    // --- CORE LOGIC ---
+    function selectChat(id) {
+        if (!id) return;
+        state.activeChatId = id;
+        const chat = state.chats.find(c => c.id === id);
+        if (chat) {
+            el.viewTitle.textContent = chat.name;
+            el.chatHistory.innerHTML = '';
+            if (chat.history.length === 0) {
+                el.welcomeMessage.style.display = 'block';
             } else {
-                break; 
+                el.welcomeMessage.style.display = 'none';
+                chat.history.forEach(m => addMessageToHistory(m.role, m.text));
             }
         }
-        return systemPrompt + messagesForPrompt.join('') + `<|assistant|>\n`;
+        renderChatList();
     }
     
+    function selectProject(id) {
+        if (!id) {
+            el.viewTitle.textContent = "Workspace";
+            el.workspaceOutline.value = "";
+            el.workspaceScript.textContent = "Select or create a project.";
+            hljs.highlightElement(el.workspaceScript);
+            return;
+        }
+        state.activeProjectId = id;
+        const project = state.projects.find(p => p.id === id);
+        if (project) {
+            el.viewTitle.textContent = project.name;
+            el.workspaceOutline.value = project.outline;
+            el.workspaceScript.textContent = project.script || "No script generated yet.";
+            hljs.highlightElement(el.workspaceScript);
+        }
+        renderProjectList();
+    }
+
+    function createNewChat() {
+        const newChat = { id: Date.now(), name: 'New Chat', history: [] };
+        state.chats.unshift(newChat);
+        save.chats();
+        selectChat(newChat.id);
+    }
+    
+    function createNewProject(isInitial = false) {
+        const projectName = isInitial ? 'My First Project' : prompt('Enter a name for your new project:');
+        if (!projectName) return;
+
+        const newProject = { id: Date.now(), name: projectName, outline: '', script: '' };
+        state.projects.unshift(newProject);
+        save.projects();
+        selectProject(newProject.id);
+    }
+
     async function checkServerStatus() {
         updateStatus('connecting', 'Connecting to AI Server...');
         try {
             const response = await fetch(HUGGING_FACE_URL);
             if (!response.ok) throw new Error(`Server offline (${response.status})`);
+            
             const data = await response.json();
-            state.serverModelId = data.model_loaded;
-            el.modelSwitcher.value = state.serverModelId;
-            updateStatus('connected', 'AI Server Online');
+            state.availableModels = data.available_models;
+            populateModelSwitcher();
+            
+            el.modelSwitcher.value = data.model_loaded;
+            
+            updateStatus('connected', `AI Server Online`);
             el.promptInput.disabled = false;
             el.sendBtn.disabled = false;
+            el.generateScriptBtn.disabled = false;
         } catch (error) {
             updateStatus('failed', `Connection Failed. Retrying...`);
-            setTimeout(checkServerStatus, 15000);
-        }
-    }
-    
-    function setGenerating(on, message = 'Assistant is thinking...') {
-        state.isGenerating = on;
-        el.promptInput.disabled = on;
-        el.sendBtn.innerHTML = on ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-arrow-up"></i>';
-        el.sendBtn.disabled = on;
-        el.modelSwitcher.disabled = on;
-        
-        updateStatus(on ? 'generating' : 'connected', on ? message : 'AI Server Online');
-    }
-    
-    async function getAiResponse() {
-        const selectedModel = el.modelSwitcher.value;
-        const isLoadingModel = selectedModel !== state.serverModelId;
-        setGenerating(true, isLoadingModel ? 'Switching model, please wait...' : 'Assistant is thinking...');
-        
-        const startTime = Date.now();
-        state.abortController = new AbortController();
-        const prompt = buildPrompt();
-        
-        const assistantMessageContainer = addMessage('assistant', '', {}, false);
-        const textContentElement = assistantMessageContainer.querySelector('.text-content');
-        let fullResponse = "";
-        
-        try {
-            const res = await fetch(`${HUGGING_FACE_URL}/chat_stream`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: prompt, model_id: selectedModel }),
-                signal: state.abortController.signal
-            });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`Request failed: ${res.status} ${errorText}`);
-            }
-            if (!res.body) throw new Error("Streaming not supported by browser.");
-
-            state.serverModelId = selectedModel;
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                fullResponse += decoder.decode(value, { stream: true });
-                textContentElement.innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
-                scrollToBottom();
-            }
-
-            textContentElement.innerHTML = marked.parse(fullResponse);
-            addCodeCopyButtons(textContentElement);
-            
-            const duration = Date.now() - startTime;
-            const activeChat = state.chats.find(c => c.id === state.activeChatId);
-            if(activeChat) {
-                activeChat.history.push({ role: 'assistant', text: fullResponse, duration: duration, feedback: null });
-                saveChats();
-                selectChat(state.activeChatId); 
-            }
-
-        } catch (e) {
-            const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}`;
-            textContentElement.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
-        } finally {
-            setGenerating(false);
+            setTimeout(checkServerStatus, 5000);
         }
     }
 
@@ -456,219 +384,188 @@ document.addEventListener('DOMContentLoaded', () => {
         const newStatus = statusMap[status] || statusMap.failed;
         el.statusText.textContent = text;
         el.statusDot.className = `w-2 h-2 rounded-full ${newStatus.color}`;
-        newStatus.pulse ? el.statusDot.classList.add('animate-pulse') : el.statusDot.classList.remove('animate-pulse');
+        el.statusDot.classList.toggle('animate-pulse', newStatus.pulse);
+    }
+
+    function setGenerating(isGenerating) {
+        state.isGenerating = isGenerating;
+        const stopIcon = '<i class="fa-solid fa-stop"></i>';
+        const sendIcon = '<i class="fa-solid fa-arrow-up"></i>';
+        const genIcon = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script';
+        
+        el.sendBtn.innerHTML = isGenerating ? stopIcon : sendIcon;
+        el.generateScriptBtn.innerHTML = isGenerating ? 'Stop Generating' : genIcon;
+        
+        el.sendBtn.disabled = isGenerating;
+        el.generateScriptBtn.disabled = isGenerating;
+        el.promptInput.disabled = isGenerating;
+        el.modelSwitcher.disabled = isGenerating;
+        
+        updateStatus(isGenerating ? 'generating' : 'connected', isGenerating ? 'Assistant is thinking...' : 'AI Server Online');
+    }
+
+    async function getAiResponse(prompt, targetElement, saveCallback) {
+        const selectedModel = el.modelSwitcher.value;
+        setGenerating(true);
+
+        state.abortController = new AbortController();
+        let fullResponse = "";
+
+        try {
+            const res = await fetch(`${HUGGING_FACE_URL}/chat_stream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, model_id: selectedModel }),
+                signal: state.abortController.signal
+            });
+
+            if (!res.ok) throw new Error(`Request failed: ${res.status} ${await res.text()}`);
+            if (!res.body) throw new Error("Streaming not supported");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            
+            targetElement.textContent = ''; // Clear target before streaming
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                fullResponse += decoder.decode(value, { stream: true });
+
+                if (targetElement.tagName === 'CODE') {
+                    targetElement.textContent = fullResponse;
+                } else {
+                    targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
+                }
+            }
+            
+            if (targetElement.tagName === 'CODE') {
+                targetElement.textContent = fullResponse;
+                hljs.highlightElement(targetElement);
+            } else {
+                targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse);
+                addCodeCopyButtons(targetElement);
+            }
+
+            if (saveCallback) saveCallback(fullResponse);
+
+        } catch (e) {
+            const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}`;
+            const errorEl = targetElement.tagName === 'CODE' ? targetElement : targetElement.querySelector('.text-content');
+            errorEl.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
+        } finally {
+            setGenerating(false);
+            checkServerStatus();
+        }
     }
 
     async function handleSend() {
         const promptText = el.promptInput.value.trim();
         if (!promptText || state.isGenerating) return;
-        
-        addMessage('user', promptText, {}, true);
+
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
+        if (!activeChat) return;
+
+        activeChat.history.push({ role: 'user', text: promptText });
+        addMessageToHistory('user', promptText);
+        
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
             activeChat.name = promptText.substring(0, 40) + (promptText.length > 40 ? '...' : '');
-            saveChats();
             renderChatList();
-            el.chatTitle.textContent = activeChat.name;
+            el.viewTitle.textContent = activeChat.name;
         }
-        el.promptInput.value = '';
-        autoResizeTextarea();
-        getAiResponse();
-    }
-    
-    // --- ADDED THIS FUNCTION BACK ---
-    function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const fileContent = e.target.result;
-            const currentPrompt = el.promptInput.value;
-            el.promptInput.value = `CONTEXT FROM FILE: ${file.name}\n\n${fileContent}\n\n---\n\n${currentPrompt}`;
-            autoResizeTextarea();
-            el.promptInput.focus();
-        };
-        reader.readAsText(file);
-    }
-    
-    // --- ADDED THIS FUNCTION BACK ---
-    function autoResizeTextarea() {
-        el.promptInput.style.height = 'auto';
-        const newHeight = Math.min(el.promptInput.scrollHeight, 200);
-        el.promptInput.style.height = `${newHeight}px`;
-    }
-
-    // --- ADDED THIS FUNCTION BACK ---
-    function scrollToBottom() {
-        el.chatHistory.scrollTop = el.chatHistory.scrollHeight;
-    }
-
-    // --- ADDED THIS FUNCTION BACK ---
-    function toggleChatOptionsMenu(chatId, buttonEl) {
-        closeAllMenus();
-        state.activeMenuChatId = chatId;
-        const menu = document.createElement('div');
-        menu.className = 'chat-options-menu text-sm';
-        const rect = buttonEl.getBoundingClientRect();
-        const chat = state.chats.find(c => c.id === chatId);
-        const pinText = chat.pinned ? 'Unpin Chat' : 'Pin Chat';
-        const pinIcon = 'fa-thumbtack';
         
-        menu.innerHTML = `
-            <button data-action="pin" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center rounded-t-md"><i class="fa-solid ${pinIcon} fa-fw mr-2 w-4"></i>${pinText}</button>
-            <button data-action="rename" class="w-full text-left px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center"><i class="fa-solid fa-pen-to-square fa-fw mr-2 w-4"></i>Rename</button>
-            <div class="h-px bg-[var(--border-color)] my-1"></div>
-            <button data-action="delete" class="w-full text-left px-3 py-1.5 hover:bg-red-500/10 text-[var(--danger)] flex items-center rounded-b-md"><i class="fa-solid fa-trash-can fa-fw mr-2 w-4"></i>Delete Chat</button>
-        `;
-        menu.style.left = `${rect.left - 150}px`;
-        menu.style.top = `${rect.bottom}px`;
-        document.body.appendChild(menu);
+        const assistantMessageContainer = addMessageToHistory('assistant', '');
+        el.promptInput.value = '';
+        el.promptInput.style.height = 'auto';
+
+        const promptForApi = `<|system|>\nYou are a helpful AI assistant.</s>\n<|user|>\n${promptText}</s>\n<|assistant|>\n`;
+        getAiResponse(promptForApi, assistantMessageContainer, (response) => {
+            activeChat.history.push({ role: 'assistant', text: response });
+            save.chats();
+        });
     }
 
-    // --- ADDED THIS FUNCTION BACK ---
-    function closeAllMenus() {
-        document.querySelectorAll('.chat-options-menu').forEach(m => m.remove());
-        state.activeMenuChatId = null;
-    }
+    async function handleGenerateScript() {
+        const project = state.projects.find(p => p.id === state.activeProjectId);
+        if (!project || state.isGenerating) return;
 
-    // --- ADDED THIS FUNCTION BACK ---
-    function handleMenuAction(action) {
-        const chatId = state.activeMenuChatId;
-        const chat = state.chats.find(c => c.id === chatId);
-        if (!chat) return;
-        switch(action) {
-            case 'pin': 
-                chat.pinned = !chat.pinned; 
-                saveChats(); 
-                renderChatList(); 
-                break;
-            case 'rename':
-                const newName = prompt('Enter new chat name:', chat.name);
-                if (newName && newName.trim()) { 
-                    chat.name = newName.trim(); 
-                    saveChats(); 
-                    renderChatList(); 
-                    if (chat.id === state.activeChatId) el.chatTitle.textContent = newName.trim(); 
-                }
-                break;
-            case 'delete':
-                if (confirm('Are you sure you want to permanently delete this chat?')) {
-                    state.chats = state.chats.filter(c => c.id !== chatId);
-                    saveChats();
-                    if (state.activeChatId === chatId) {
-                        closeAllMenus();
-                        selectChat(state.chats[0]?.id || null);
-                    }
-                    if (state.chats.length === 0) createNewChat();
-                    renderChatList();
-                }
-                break;
-        }
-        closeAllMenus();
+        const lineCount = el.lineCountSlider.value;
+        const lineInstruction = lineCount > 0 ? `The script should be approximately ${lineCount} lines long. This is a target, not a strict limit, but try to get reasonably close.` : '';
+
+        const prompt = `
+<|system|>
+You are an expert programmer. Based on the following project outline, generate a complete, high-quality code script.
+The script should be well-documented and follow best practices. ${lineInstruction}
+Only output the raw code, without any additional explanations or markdown formatting like \`\`\`python.
+Project Title: "${project.name}"
+Outline & Notes:
+${project.outline}
+</s>
+<|user|>
+Generate the complete script now.
+</s>
+<|assistant|>
+`.trim();
+        
+        getAiResponse(prompt, el.workspaceScript, (response) => {
+            project.script = response;
+            save.projects();
+        });
     }
 
     function addEventListeners() {
+        el.themeBtn.onclick = () => {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+        };
+
+        el.chatbotTabBtn.onclick = () => switchTab('chatbot');
+        el.workspaceTabBtn.onclick = () => switchTab('workspace');
+        el.newChatBtn.onclick = createNewChat;
+        el.newProjectBtn.onclick = () => createNewProject(false);
+
         el.sendBtn.onclick = handleSend;
-        el.promptInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }});
-        el.promptInput.addEventListener('input', autoResizeTextarea);
-        el.themeBtn.onclick = () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
-        el.newChatBtn.onclick = () => { const newChat = createNewChat(); selectChat(newChat.id); };
-        el.fileInput.addEventListener('change', handleFileUpload);
+        el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }});
         
-        document.addEventListener('click', (e) => {
-            const chatItem = e.target.closest('.chat-item');
-            if (chatItem && !e.target.closest('[data-action="toggle-menu"]')) {
-                selectChat(parseInt(chatItem.dataset.chatId));
-                if (window.innerWidth < 768) {
-                    el.leftSidebar.classList.remove('open');
-                    el.sidebarOverlay.classList.remove('open');
-                }
-                return;
-            }
+        el.generateScriptBtn.onclick = handleGenerateScript;
+        el.lineCountSlider.addEventListener('input', (e) => {
+            el.lineCountValue.textContent = e.target.value;
+        });
+        
+        el.chatList.addEventListener('click', (e) => {
+            const item = e.target.closest('.chat-item');
+            if (item) selectChat(parseInt(item.dataset.chatId));
+        });
 
-            const menuButton = e.target.closest('[data-action="toggle-menu"]');
-            if (menuButton) {
-                const chatId = parseInt(menuButton.closest('.chat-item').dataset.chatId);
-                if (state.activeMenuChatId === chatId) {
-                    closeAllMenus();
-                } else {
-                    toggleChatOptionsMenu(chatId, menuButton);
-                }
-                return;
-            }
-            
-            const actionButton = e.target.closest('.chat-options-menu button');
-            if(actionButton) {
-                 handleMenuAction(actionButton.dataset.action);
-                 return;
-            }
-
-            if (!e.target.closest('.chat-options-menu')) {
-                closeAllMenus();
+        el.projectList.addEventListener('click', (e) => {
+            const item = e.target.closest('.project-item');
+            if (e.target.closest('[data-action="delete-project"]')) {
+                 if (confirm('Are you sure you want to delete this project?')) {
+                    const projectId = parseInt(item.dataset.projectId);
+                    state.projects = state.projects.filter(p => p.id !== projectId);
+                    save.projects();
+                    if (state.activeProjectId === projectId) {
+                        state.activeProjectId = state.projects[0]?.id || null;
+                        selectProject(state.activeProjectId);
+                    } else {
+                        renderProjectList();
+                    }
+                 }
+            } else if (item) {
+                selectProject(parseInt(item.dataset.projectId));
             }
         });
         
-        el.clearHistoryBtn.onclick = () => {
-            if (!state.activeChatId) return;
-            if (confirm('Are you sure you want to clear the history for this chat?')) {
-                const chat = state.chats.find(c => c.id === state.activeChatId);
-                if (chat) { chat.history = []; saveChats(); selectChat(state.activeChatId); }
-            }
-        };
-        el.systemPromptInput.oninput = () => {
-            const chat = state.chats.find(c => c.id === state.activeChatId);
-            if(chat) { chat.system_prompt = el.systemPromptInput.value; chat.persona = 'custom'; el.personaSelect.value = 'custom'; saveChats(); }
-        };
-        el.personaSelect.onchange = () => {
-            const personaKey = el.personaSelect.value;
-            const chat = state.chats.find(c => c.id === state.activeChatId);
-            if(chat && personaKey !== 'custom') { chat.persona = personaKey; chat.system_prompt = PERSONAS[personaKey].prompt; el.systemPromptInput.value = chat.system_prompt; saveChats(); }
-        };
-        el.toggleLeftSidebar.onclick = () => {
-            el.leftSidebar.classList.add('open');
-            el.sidebarOverlay.classList.add('open');
-        };
-        el.sidebarOverlay.onclick = () => {
-            el.leftSidebar.classList.remove('open');
-            el.rightSidebar.classList.remove('open');
-            el.sidebarOverlay.classList.remove('open');
-        };
-        el.toggleRightSidebar.onclick = () => {
-            el.rightSidebar.classList.add('open');
-            el.sidebarOverlay.classList.add('open');
-        };
-        el.quickPromptsBtn.onclick = () => el.quickPromptsModal.classList.remove('hidden');
-        el.modalCloseX.onclick = () => el.quickPromptsModal.classList.add('hidden');
-        el.quickPromptsModal.onclick = (e) => { if (e.target.id === 'quick-prompts-modal') el.quickPromptsModal.classList.add('hidden'); };
-        el.importChatsBtn.onclick = () => el.importChatsInput.click();
-        el.importChatsInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const importedChats = JSON.parse(event.target.result);
-                    if (Array.isArray(importedChats)) {
-                        state.chats = [...importedChats, ...state.chats.filter(c => !importedChats.find(ic => ic.id === c.id))];
-                        saveChats(); renderChatList(); alert('Chats imported successfully!');
-                    } else { throw new Error('Invalid format'); }
-                } catch (err) { alert('Failed to import chats. Please check the file format.'); }
-            };
-            reader.readAsText(file);
-        };
-        el.exportChatsBtn.onclick = () => {
-            if (state.chats.length === 0) return alert('No chats to export.');
-            const blob = new Blob([JSON.stringify(state.chats, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fugthai_chats_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        };
-        el.helpBtn.onclick = () => alert('FugthAI Help\n\n- Use the dropdown to switch between models.\n- Manage chats with the three-dot menu.\n- Customize AI behavior in the right sidebar.\n- All chats are saved locally in your browser.');
+        el.workspaceOutline.addEventListener('input', () => {
+             const project = state.projects.find(p => p.id === state.activeProjectId);
+             if (project) {
+                project.outline = el.workspaceOutline.value;
+                save.projects();
+             }
+        });
     }
-    
+
     init();
 });
 </script>
