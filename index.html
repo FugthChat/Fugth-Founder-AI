@@ -55,41 +55,32 @@
             <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="text-[var(--accent)] sidebar-brand-text">AI</span></h1>
             <button id="theme-btn" class="hover:bg-black/10 dark:hover:bg-white/10 p-2 rounded-full text-lg ml-auto"><i class="fa-solid fa-moon"></i></button>
         </div>
-
         <div class="flex border border-[var(--border-color)] rounded-lg p-1 mb-4">
-            <button id="chatbot-tab-btn" class="tab-btn active w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-comments"></i><span class="ml-2 sidebar-text font-semibold">Chatbot</span>
-            </button>
-            <button id="workspace-tab-btn" class="tab-btn w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center">
-                <i class="fa-solid fa-lightbulb"></i><span class="ml-2 sidebar-text font-semibold">Workspace</span>
-            </button>
+            <button id="chatbot-tab-btn" class="tab-btn active w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-comments"></i><span class="ml-2 sidebar-text font-semibold">Chatbot</span></button>
+            <button id="workspace-tab-btn" class="tab-btn w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center"><i class="fa-solid fa-lightbulb"></i><span class="ml-2 sidebar-text font-semibold">Workspace</span></button>
         </div>
-
         <div id="chatbot-sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
-            <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span>
-            </button>
+            <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span></button>
             <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
-        
         <div id="workspace-sidebar-content" class="hidden flex-col flex-1 overflow-y-auto -mr-4 pr-4">
-            <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span>
-            </button>
+            <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span></button>
             <nav id="project-list" class="flex-1 overflow-y-auto space-y-1"></nav>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col min-w-0 relative">
         <header class="p-3 flex justify-between items-center border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-main)]/80 backdrop-blur-sm">
-            <div class="flex items-center">
-                <button id="toggle-left-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 mr-2 md:hidden"><i class="fa-solid fa-bars"></i></button>
+            <div class="flex items-center gap-4">
+                <button id="toggle-left-sidebar" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 md:hidden"><i class="fa-solid fa-bars"></i></button>
                 <h2 id="view-title" class="font-semibold truncate text-lg">New Chat</h2>
+                <div id="status-bar" class="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                    <div id="status-dot" class="w-2 h-2 rounded-full"></div><span id="status-text"></span>
+                </div>
             </div>
             <div class="flex items-center space-x-2">
                 <div class="relative">
-                    <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)]">
-                    </select>
+                    <select id="model-switcher" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"></select>
                     <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] pointer-events-none"></i>
                 </div>
             </div>
@@ -106,45 +97,40 @@
 
         <div id="workspace-view" class="hidden flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
-                <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Project Outline</h3>
-                <textarea id="workspace-outline" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
+                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[300px] overflow-auto">
+                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet. Select a project and use the controls below.</code></pre>
+                </div>
             </div>
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
-                <h3 class="text-lg font-bold font-['Space_Grotesk']">AI Generation Controls</h3>
+                <h3 class="text-lg font-bold font-['Space_Grotesk']">Generation Controls</h3>
                 <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md my-4 space-y-3">
+                    <textarea id="workspace-prompt" placeholder="Describe the script you want to create..." class="w-full h-24 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
                     <div>
                         <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span></label>
                         <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                     </div>
                     <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script</button>
                 </div>
-                 <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
-                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[200px] overflow-auto">
-                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet.</code></pre>
-                </div>
             </div>
-             <!-- NEW: Debugging Assistant -->
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
-                <h3 class="text-lg font-bold font-['Space_Grotesk']">Debugging Assistant</h3>
+                <h3 class="text-lg font-bold font-['Space_Grotesk']">Code Refinement Assistant</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
-                        <label for="error-log" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Error Log</label>
-                        <textarea id="error-log" placeholder="Paste the full error message here..." class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                        <label for="error-log" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Error Log (Optional)</label>
+                        <textarea id="error-log" placeholder="Paste error messages here..." class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
                     </div>
                     <div>
-                        <label for="debug-notes" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Your Notes / Request</label>
-                        <textarea id="debug-notes" placeholder="e.g., 'The error happens when I click the button. I think the variable is not initialized.'" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                        <label for="refine-notes" class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Your Notes / Request</label>
+                        <textarea id="refine-notes" placeholder="e.g., 'This function is too slow, make it more efficient.' or 'Add a score counter to the game.'" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
                     </div>
                 </div>
-                <button id="fix-code-btn" class="mt-4 w-full py-2 px-4 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-bug mr-2"></i>Analyze & Fix Code</button>
+                <button id="refine-code-btn" class="mt-4 w-full py-2 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wrench mr-2"></i>Refine & Improve Code</button>
             </div>
         </div>
         
         <footer id="chatbot-footer" class="p-4 flex-shrink-0 bg-transparent">
             <div class="max-w-4xl mx-auto">
-                <div id="status-bar" class="h-5 mb-2 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                    <div id="status-dot" class="w-2 h-2 rounded-full"></div><span id="status-text"></span>
-                </div>
                 <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)]">
                     <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…"></textarea>
                     <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
@@ -160,9 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const HUGGING_FACE_URL = "https://fugthchat-fugth-founder-ai.hf.space";
     
     const LOCAL_STORAGE_KEY = {
-        CHATS: 'fugthai_chats_v23',
-        THEME: 'fugthai_theme_v23',
-        PROJECTS: 'fugthai_projects_v23'
+        CHATS: 'fugthai_chats_v24',
+        THEME: 'fugthai_theme_v24',
+        PROJECTS: 'fugthai_projects_v24'
     };
     
     let state = {
@@ -187,9 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'prompt-input', 'send-btn', 'model-switcher', 'chatbot-footer',
         'status-bar', 'status-text', 'status-dot',
         'new-chat-btn', 'chat-list', 'new-project-btn', 'project-list',
-        'workspace-outline', 'workspace-script', 'generate-script-btn',
+        'workspace-prompt', 'workspace-script', 'generate-script-btn',
         'workspace-script-container', 'line-count-slider', 'line-count-value',
-        'error-log', 'debug-notes', 'fix-code-btn'
+        'error-log', 'refine-notes', 'refine-code-btn'
     ];
     elIds.forEach(id => {
         const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
@@ -215,12 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function populateModelSwitcher() {
+        const currentVal = el.modelSwitcher.value;
         el.modelSwitcher.innerHTML = '';
         for (const modelId in state.availableModels) {
             const model = state.availableModels[modelId];
             const option = new Option(model.name, modelId);
             el.modelSwitcher.add(option);
         }
+        if (currentVal) el.modelSwitcher.value = currentVal;
     }
 
     function switchTab(tab) {
@@ -229,11 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         el.chatbotTabBtn.classList.toggle('active', isChatbot);
         el.workspaceTabBtn.classList.toggle('active', !isChatbot);
-
         el.chatbotView.style.display = isChatbot ? 'flex' : 'none';
         el.chatbotFooter.style.display = isChatbot ? 'block' : 'none';
         el.workspaceView.style.display = !isChatbot ? 'flex' : 'none';
-        
         el.chatbotSidebarContent.style.display = isChatbot ? 'flex' : 'none';
         el.workspaceSidebarContent.style.display = !isChatbot ? 'flex' : 'none';
 
@@ -246,40 +232,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderChatList() {
-        const sortedChats = [...state.chats].sort((a, b) => b.id - a.id);
-        el.chatList.innerHTML = sortedChats.map(c => `
-            <div class="chat-item group relative flex items-center p-2 rounded-lg cursor-pointer ${c.id === state.activeChatId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}" data-chat-id="${c.id}">
-                <i class="fa-regular fa-message w-6 text-center text-[var(--text-secondary)]"></i>
-                <span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${c.name}</span>
-            </div>
-        `).join('');
-    }
-
-    function renderProjectList() {
-        const sortedProjects = [...state.projects].sort((a, b) => b.id - a.id);
-        el.projectList.innerHTML = sortedProjects.map(p => `
-            <div class="project-item group relative flex items-center p-2 rounded-lg cursor-pointer ${p.id === state.activeProjectId ? 'bg-indigo-100 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}" data-project-id="${p.id}">
-                <i class="fa-regular fa-folder w-6 text-center text-[var(--text-secondary)]"></i>
-                <span class="ml-2 flex-grow truncate text-sm sidebar-text font-medium">${p.name}</span>
-                <button data-action="delete-project" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-transparent group-hover:text-[var(--text-secondary)] hover:bg-red-500/10 text-red-500"><i class="fa-solid fa-trash-can"></i></button>
-            </div>
-        `).join('');
-    }
-
     function addMessageToHistory(role, text, options = {}) {
         const { index, duration, feedback } = options;
         el.welcomeMessage.style.display = 'none';
         const who = role === 'user' ? 'You' : 'FugthAI';
         const avatarIcon = role === 'user' ? 'fa-user' : 'fa-brain';
         const messageBg = role === 'user' ? 'bg-[var(--bg-message-user)]' : 'bg-[var(--bg-message-bot)]';
-        
         const messageContainer = document.createElement('div');
         messageContainer.className = 'message-container flex items-start gap-4';
         messageContainer.dataset.messageIndex = index;
-        
         const contentHTML = text ? marked.parse(text) : '<span class="blinking-cursor">▍</span>';
-        
         const durationHTML = duration ? `<span class="text-xs text-[var(--text-secondary)] ml-auto">Generated in ${(duration / 1000).toFixed(1)}s</span>` : '';
         const actionsHTML = role === 'assistant' ? `
             <div class="flex items-center gap-2 mt-2">
@@ -288,9 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button data-action="redo" class="action-btn p-1 rounded-md"><i class="fa-solid fa-rotate-right"></i></button>
                 <button data-action="copy" class="action-btn p-1 rounded-md"><i class="fa-solid fa-copy"></i></button>
                 ${durationHTML}
-            </div>
-        ` : '';
-
+            </div>` : '';
         messageContainer.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-lg text-[var(--text-secondary)] flex-shrink-0 mt-1"><i class="fa-solid ${avatarIcon}"></i></div>
             <div class="flex-1">
@@ -299,31 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="prose max-w-none text-content">${contentHTML}</div>
                 </div>
                 ${actionsHTML}
-            </div>
-        `;
-        
+            </div>`;
         el.chatHistory.appendChild(messageContainer);
-        addCodeCopyButtons(messageContainer);
         el.chatbotView.scrollTop = el.chatbotView.scrollHeight;
         return messageContainer;
     }
     
-    function addCodeCopyButtons(container) {
-        container.querySelectorAll('pre').forEach(pre => {
-            if (pre.querySelector('.copy-btn') || !pre.querySelector('code')) return;
-            const btn = document.createElement('button');
-            btn.className = 'copy-btn';
-            btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
-            btn.onclick = () => {
-                navigator.clipboard.writeText(pre.querySelector('code').innerText).then(() => {
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-                    setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 2000);
-                });
-            };
-            pre.appendChild(btn);
-        });
-    }
-
     function selectChat(id) {
         if (!id) return;
         state.activeChatId = id;
@@ -331,12 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chat) {
             el.viewTitle.textContent = chat.name;
             el.chatHistory.innerHTML = '';
-            if (chat.history.length === 0) {
-                el.welcomeMessage.style.display = 'block';
-            } else {
-                el.welcomeMessage.style.display = 'none';
-                chat.history.forEach((m, i) => addMessageToHistory(m.role, m.text, { ...m, index: i }));
-            }
+            el.welcomeMessage.style.display = chat.history.length === 0 ? 'block' : 'none';
+            chat.history.forEach((m, i) => addMessageToHistory(m.role, m.text, { ...m, index: i }));
         }
         renderChatList();
     }
@@ -344,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectProject(id) {
         if (!id) {
             el.viewTitle.textContent = "Workspace";
-            el.workspaceOutline.value = "";
+            el.workspacePrompt.value = "";
             el.workspaceScript.textContent = "Select or create a project.";
             hljs.highlightElement(el.workspaceScript);
             return;
@@ -353,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const project = state.projects.find(p => p.id === id);
         if (project) {
             el.viewTitle.textContent = project.name;
-            el.workspaceOutline.value = project.outline;
+            el.workspacePrompt.value = project.prompt || "";
             el.workspaceScript.textContent = project.script || "No script generated yet.";
             hljs.highlightElement(el.workspaceScript);
         }
@@ -370,8 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createNewProject(isInitial = false) {
         const projectName = isInitial ? 'My First Project' : prompt('Enter a name for your new project:');
         if (!projectName) return;
-
-        const newProject = { id: Date.now(), name: projectName, outline: '', script: '' };
+        const newProject = { id: Date.now(), name: projectName, prompt: '', script: '' };
         state.projects.unshift(newProject);
         save.projects();
         selectProject(newProject.id);
@@ -382,18 +318,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(HUGGING_FACE_URL);
             if (!response.ok) throw new Error(`Server offline (${response.status})`);
-            
             const data = await response.json();
             state.availableModels = data.available_models;
             populateModelSwitcher();
-            
             el.modelSwitcher.value = data.model_loaded;
-            
             updateStatus('connected', `AI Server Online`);
             el.promptInput.disabled = false;
             el.sendBtn.disabled = false;
             el.generateScriptBtn.disabled = false;
-            el.fixCodeBtn.disabled = false;
+            el.refineCodeBtn.disabled = false;
         } catch (error) {
             updateStatus('failed', `Connection Failed. Retrying...`);
             setTimeout(checkServerStatus, 5000);
@@ -416,22 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function setGenerating(isGenerating, startTime) {
         state.isGenerating = isGenerating;
         clearInterval(state.thinkingTimerInterval);
-
-        const stopIcon = '<i class="fa-solid fa-stop"></i>';
-        const sendIcon = '<i class="fa-solid fa-arrow-up"></i>';
-        const genIcon = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script';
-        const fixIcon = '<i class="fa-solid fa-bug mr-2"></i>Analyze & Fix Code';
-        
-        el.sendBtn.innerHTML = isGenerating ? stopIcon : sendIcon;
-        el.generateScriptBtn.innerHTML = isGenerating ? 'Stop Generating' : genIcon;
-        el.fixCodeBtn.innerHTML = isGenerating ? 'Stop Fixing' : fixIcon;
-        
         el.sendBtn.disabled = isGenerating;
         el.generateScriptBtn.disabled = isGenerating;
-        el.fixCodeBtn.disabled = isGenerating;
+        el.refineCodeBtn.disabled = isGenerating;
         el.promptInput.disabled = isGenerating;
         el.modelSwitcher.disabled = isGenerating;
-        
         if(isGenerating) {
             state.thinkingTimerInterval = setInterval(() => {
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -446,10 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedModel = el.modelSwitcher.value;
         const startTime = Date.now();
         setGenerating(true, startTime);
-
         state.abortController = new AbortController();
         let fullResponse = "";
-
         try {
             const res = await fetch(`${HUGGING_FACE_URL}/chat_stream`, {
                 method: 'POST',
@@ -457,43 +377,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ prompt, model_id: selectedModel }),
                 signal: state.abortController.signal
             });
-
             if (!res.ok) throw new Error(`Request failed: ${res.status} ${await res.text()}`);
             if (!res.body) throw new Error("Streaming not supported");
-
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            
-            targetElement.textContent = ''; 
-            
+            if(targetElement) targetElement.textContent = ''; 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 fullResponse += decoder.decode(value, { stream: true });
-
-                if (targetElement.tagName === 'CODE') {
-                    targetElement.textContent = fullResponse;
-                } else {
-                    targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
+                if (targetElement) {
+                    if (targetElement.tagName === 'CODE') {
+                        targetElement.textContent = fullResponse;
+                    } else {
+                        targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
+                    }
                 }
             }
-            
             const duration = Date.now() - startTime;
-
-            if (targetElement.tagName === 'CODE') {
-                targetElement.textContent = fullResponse;
-                hljs.highlightElement(targetElement);
-            } else {
-                targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse);
-                addCodeCopyButtons(targetElement);
+            if(targetElement) {
+                if (targetElement.tagName === 'CODE') {
+                    targetElement.textContent = fullResponse;
+                    hljs.highlightElement(targetElement);
+                } else {
+                    targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse);
+                    addMessageToHistory.addCodeCopyButtons(targetElement);
+                }
             }
-
             if (saveCallback) saveCallback(fullResponse, duration);
-
         } catch (e) {
             const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}`;
             const errorEl = targetElement.tagName === 'CODE' ? targetElement : targetElement.querySelector('.text-content');
-            errorEl.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
+            if(errorEl) errorEl.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
         } finally {
             setGenerating(false);
             checkServerStatus();
@@ -503,13 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleSend(isRedo = false) {
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
         if (!activeChat || state.isGenerating) return;
-
         let promptText;
         if (isRedo) {
             const lastUserMessage = [...activeChat.history].reverse().find(m => m.role === 'user');
             if (!lastUserMessage) return;
             promptText = lastUserMessage.text;
-            if (activeChat.history[activeChat.history.length - 1].role === 'assistant') {
+            if (activeChat.history.length > 0 && activeChat.history[activeChat.history.length - 1].role === 'assistant') {
                 activeChat.history.pop();
             }
         } else {
@@ -517,19 +431,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!promptText) return;
             activeChat.history.push({ role: 'user', text: promptText });
         }
-        
         selectChat(activeChat.id);
-
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
             activeChat.name = promptText.substring(0, 40) + (promptText.length > 40 ? '...' : '');
             renderChatList();
             el.viewTitle.textContent = activeChat.name;
         }
-        
         const assistantMessageContainer = addMessageToHistory('assistant', '', { index: activeChat.history.length });
         el.promptInput.value = '';
         el.promptInput.style.height = 'auto';
-
         const promptForApi = `<|system|>\nYou are a helpful AI assistant.</s>\n<|user|>\n${promptText}</s>\n<|assistant|>\n`;
         getAiResponse(promptForApi, assistantMessageContainer, (response, duration) => {
             const newBotMessage = { role: 'assistant', text: response, duration, feedback: null };
@@ -541,97 +451,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleGenerateScript() {
         const project = state.projects.find(p => p.id === state.activeProjectId);
-        if (!project || state.isGenerating) return;
-
+        const userPrompt = el.workspacePrompt.value.trim();
+        if (!project || !userPrompt || state.isGenerating) {
+            alert("Please select a project and describe the script you want to create.");
+            return;
+        }
+        project.prompt = userPrompt;
         const lineCount = el.lineCountSlider.value;
-        const lineInstruction = lineCount > 0 ? `The script should be approximately ${lineCount} lines long. This is a target, not a strict limit, but try to get reasonably close.` : '';
-
-        const prompt = `
-<|system|>
-You are an expert programmer. Based on the following project outline, generate a complete, high-quality code script.
-The script should be well-documented and follow best practices. ${lineInstruction}
-Only output the raw code, without any additional explanations or markdown formatting like \`\`\`python.
-Project Title: "${project.name}"
-Outline & Notes:
-${project.outline}
-</s>
-<|user|>
-Generate the complete script now.
-</s>
-<|assistant|>
-`.trim();
-        
+        const lineInstruction = lineCount > 0 ? `The script should be approximately ${lineCount} lines long.` : '';
+        const prompt = `<|system|>You are an expert programmer. Generate a complete script based on the following request. ${lineInstruction} Only output raw code without explanations.</s>\n<|user|>\nRequest: "${userPrompt}"</s>\n<|assistant|>`.trim();
         getAiResponse(prompt, el.workspaceScript, (response) => {
             project.script = response;
             save.projects();
         });
     }
 
-    async function handleFixCode() {
+    async function handleRefineCode() {
         const project = state.projects.find(p => p.id === state.activeProjectId);
         const errorLog = el.errorLog.value.trim();
-        const debugNotes = el.debugNotes.value.trim();
-
-        if (!project || !project.script || !errorLog || state.isGenerating) {
-            alert("Please make sure there is a script to fix and an error log provided.");
+        const refineNotes = el.refineNotes.value.trim();
+        if (!project || !project.script || state.isGenerating) {
+            alert("Please generate a script first before trying to refine it.");
             return;
         }
-
+        if (!errorLog && !refineNotes) {
+            alert("Please provide either an error log or some notes/requests for refinement.");
+            return;
+        }
+        const errorPromptPart = errorLog ? `When I ran the script, I got this error:\n--- ERROR LOG ---\n${errorLog}\n--- END ERROR LOG ---\n` : '';
+        const notesPromptPart = refineNotes ? `Here are my notes and requests for changes:\n--- USER NOTES ---\n${refineNotes}\n--- END USER NOTES ---\n` : '';
         const prompt = `
 <|system|>
-You are an expert programmer and debugger. Your task is to analyze the provided code, the error message it produced, and the user's notes to identify the bug and provide a corrected, fully functional version of the script. Only output the complete, raw code for the fixed script, without any additional explanations or markdown formatting.
+You are an expert programmer and debugger. Your task is to analyze the provided code and user feedback to provide a corrected and improved version of the script. Only output the complete, raw code for the fixed script, without any additional explanations or markdown formatting.
 </s>
 <|user|>
-Here is the script that has a bug:
+Here is the script that needs refinement:
 --- SCRIPT START ---
 ${project.script}
 --- SCRIPT END ---
-
-When I ran this script, I got the following error:
---- ERROR LOG START ---
-${errorLog}
---- ERROR LOG END ---
-
-Here are my notes on how to fix it:
---- USER NOTES START ---
-${debugNotes}
---- USER NOTES END ---
-
-Please provide the complete, corrected script now.
+${errorPromptPart}
+${notesPromptPart}
+Please provide the complete, corrected and improved script now.
 </s>
 <|assistant|>
 `.trim();
-
         getAiResponse(prompt, el.workspaceScript, (response) => {
             project.script = response;
             save.projects();
             el.errorLog.value = '';
-            el.debugNotes.value = '';
+            el.refineNotes.value = '';
         });
-    }
-
-    function handleChatActions(e) {
-        const button = e.target.closest('[data-action]');
-        if (!button) return;
-
-        const action = button.dataset.action;
-        const messageContainer = button.closest('.message-container');
-        const messageIndex = parseInt(messageContainer.dataset.messageIndex);
-        const activeChat = state.chats.find(c => c.id === state.activeChatId);
-        const message = activeChat.history[messageIndex];
-
-        switch(action) {
-            case 'like': message.feedback = message.feedback === 'like' ? null : 'like'; break;
-            case 'dislike': message.feedback = message.feedback === 'dislike' ? null : 'dislike'; break;
-            case 'redo': handleSend(true); return;
-            case 'copy':
-                navigator.clipboard.writeText(message.text);
-                button.innerHTML = '<i class="fa-solid fa-check"></i>';
-                setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000);
-                return;
-        }
-        save.chats();
-        selectChat(activeChat.id);
     }
 
     function addEventListeners() {
@@ -643,10 +512,25 @@ Please provide the complete, corrected script now.
         el.sendBtn.onclick = () => handleSend(false);
         el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(false); }});
         el.generateScriptBtn.onclick = handleGenerateScript;
-        el.fixCodeBtn.onclick = handleFixCode;
+        el.refineCodeBtn.onclick = handleRefineCode;
         el.lineCountSlider.addEventListener('input', (e) => { el.lineCountValue.textContent = e.target.value; });
-        el.chatHistory.addEventListener('click', handleChatActions);
-        el.chatList.addEventListener('click', (e) => { const item = e.target.closest('.chat-item'); if (item) selectChat(parseInt(item.dataset.chatId)); });
+        el.chatHistory.addEventListener('click', (e) => {
+            const button = e.target.closest('[data-action]');
+            if (!button) return;
+            const action = button.dataset.action;
+            const messageContainer = button.closest('.message-container');
+            const messageIndex = parseInt(messageContainer.dataset.messageIndex);
+            const activeChat = state.chats.find(c => c.id === state.activeChatId);
+            const message = activeChat.history[messageIndex];
+            switch(action) {
+                case 'like': message.feedback = message.feedback === 'like' ? null : 'like'; break;
+                case 'dislike': message.feedback = message.feedback === 'dislike' ? null : 'dislike'; break;
+                case 'redo': handleSend(true); return;
+                case 'copy': navigator.clipboard.writeText(message.text); button.innerHTML = '<i class="fa-solid fa-check"></i>'; setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000); return;
+            }
+            save.chats();
+            selectChat(activeChat.id);
+        });
         el.projectList.addEventListener('click', (e) => {
             const item = e.target.closest('.project-item');
             if (e.target.closest('[data-action="delete-project"]')) {
@@ -657,18 +541,14 @@ Please provide the complete, corrected script now.
                     if (state.activeProjectId === projectId) {
                         state.activeProjectId = state.projects[0]?.id || null;
                         selectProject(state.activeProjectId);
-                    } else {
-                        renderProjectList();
-                    }
+                    } else { renderProjectList(); }
                  }
-            } else if (item) {
-                selectProject(parseInt(item.dataset.projectId));
-            }
+            } else if (item) { selectProject(parseInt(item.dataset.projectId)); }
         });
-        el.workspaceOutline.addEventListener('input', () => {
+        el.workspacePrompt.addEventListener('input', () => {
              const project = state.projects.find(p => p.id === state.activeProjectId);
              if (project) {
-                project.outline = el.workspaceOutline.value;
+                project.prompt = el.workspacePrompt.value;
                 save.projects();
              }
         });
