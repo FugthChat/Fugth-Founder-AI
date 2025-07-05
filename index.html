@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>FugthAI - Conversational AI Platform</title>
+    <title>FugthAI - Your AI Firework</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,44 +15,73 @@
 
     <style>
         :root, html[data-theme="light"] {
-            --bg-main: #f4f7f9; --bg-sidebar: #ffffff; --bg-input: #ffffff; --bg-menu: #ffffff;
-            --bg-message-user: #eef2ff; --bg-message-bot: #ffffff; --text-primary: #111827;
-            --text-secondary: #6b7280; --accent: #4f46e5; --danger: #ef4444;
-            --border-color: #e5e7eb; --shadow-color: rgba(0, 0, 0, 0.05); --code-bg: #1f2937;
+            --bg-main: #e0f2f7; /* Light Blue */
+            --bg-sidebar: #ffffff;
+            --bg-input: #ffffff;
+            --bg-menu: #ffffff;
+            --bg-message-user: #cceeff; /* Lighter Blue */
+            --bg-message-bot: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --accent: #ef4444; /* Red */
+            --danger: #dc2626; /* Darker Red */
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --code-bg: #f7fafc; /* Light code background */
+            --fourth-of-july-blue: #3b82f6; /* Blue for theme */
+            --fourth-of-july-red: #ef4444; /* Red for theme */
         }
         html[data-theme="dark"] {
-            --bg-main: #111111; --bg-sidebar: #191919; --bg-input: #191919; --bg-menu: #242424;
-            --bg-message-user: #2a2a2e; --bg-message-bot: #191919; --text-primary: #f9fafb;
-            --text-secondary: #9ca3af; --accent: #818cf8; --danger: #f87171;
-            --border-color: #374151; --shadow-color: rgba(255, 255, 255, 0.05); --code-bg: #1f2937;
+            --bg-main: #0a0a0a; /* Darker background */
+            --bg-sidebar: #121212;
+            --bg-input: #1a1a1a;
+            --bg-menu: #202020;
+            --bg-message-user: #2c2c30;
+            --bg-message-bot: #1a1a1a;
+            --text-primary: #f8f8f8;
+            --text-secondary: #b0b0b0;
+            --accent: #818cf8; /* Retaining a friendly accent for dark mode */
+            --danger: #fca5a5;
+            --border-color: #3f3f46;
+            --shadow-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #2d3748;
+            --fourth-of-july-blue: #60a5fa; /* Lighter blue for dark theme */
+            --fourth-of-july-red: #f87171; /* Lighter red for dark theme */
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-primary); overflow: hidden; }
         .prose { color: var(--text-primary); }
         .prose code:not(pre *) { background-color: rgba(0,0,0,0.05); padding: 2px 5px; border-radius: 4px; font-family: 'Space Grotesk', monospace; font-size: 0.9em; }
         html[data-theme="dark"] .prose code:not(pre *) { background-color: rgba(255,255,255,0.1); }
-        .prose pre { background-color: var(--code-bg); padding: 1.25rem 1rem; border-radius: 0.5rem; color: #d1d5db; position: relative; }
+        .prose pre { background-color: var(--code-bg); padding: 1.25rem 1rem; border-radius: 0.5rem; color: var(--text-primary); position: relative; }
         .blinking-cursor { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { color: var(--accent); } }
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
-        .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #374151; color: #9ca3af; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8em; opacity: 0; transition: opacity 0.2s; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        html[data-theme="dark"]::-webkit-scrollbar-thumb { background: #64748b; }
+        .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: var(--code-bg); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8em; opacity: 0; transition: opacity 0.2s; }
         .prose pre:hover .copy-btn { opacity: 1; }
         .sidebar { transition: width 0.3s ease, transform 0.3s ease; }
-        .tab-btn.active { background-color: var(--accent); color: white; }
+        .tab-btn.active { background-color: var(--fourth-of-july-red); color: white; }
         .tab-btn { color: var(--text-secondary); }
         .action-btn { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
         .action-btn:hover { background-color: rgba(0,0,0,0.05); }
         html[data-theme="dark"] .action-btn:hover { background-color: rgba(255,255,255,0.1); }
-        .action-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
+        .action-btn.active { background-color: var(--fourth-of-july-blue); color: white; border-color: var(--fourth-of-july-blue); }
+        .firework-gradient {
+            background-image: linear-gradient(to right top, #3b82f6, #ef4444);
+        }
+        .firework-text {
+            color: var(--fourth-of-july-red);
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden antialiased">
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-30 opacity-0 pointer-events-none transition-opacity md:hidden"></div>
     
-    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0 md:w-20 md:hover:w-72">
+    <aside id="left-sidebar" class="sidebar bg-[var(--bg-sidebar)] p-4 flex flex-col border-r border-[var(--border-color)] flex-shrink-0 w-20 md:hover:w-72 md:w-20">
         <div class="flex items-center mb-6 flex-shrink-0">
-            <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="text-[var(--accent)] sidebar-brand-text">AI</span></h1>
+            <h1 class="text-xl font-bold font-['Space_Grotesk'] overflow-hidden">F<span class="sidebar-brand-text">ugth</span><span class="firework-text sidebar-brand-text">AI</span></h1>
             <button id="theme-btn" class="hover:bg-black/10 dark:hover:bg-white/10 p-2 rounded-full text-lg ml-auto"><i class="fa-solid fa-moon"></i></button>
         </div>
         <div class="flex border border-[var(--border-color)] rounded-lg p-1 mb-4">
@@ -60,12 +89,20 @@
             <button id="workspace-tab-btn" class="tab-btn w-full py-2 px-3 rounded-lg text-sm flex items-center justify-center"><i class="fa-solid fa-lightbulb"></i><span class="ml-2 sidebar-text font-semibold">Workspace</span></button>
         </div>
         <div id="chatbot-sidebar-content" class="flex flex-col flex-1 overflow-y-auto -mr-4 pr-4">
-            <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span></button>
+            <button id="new-chat-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--fourth-of-july-blue)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Chat</span></button>
             <nav id="chat-list" class="flex-1 overflow-y-auto space-y-1"></nav>
+            <div class="mt-4 pt-4 border-t border-[var(--border-color)]">
+                <button id="export-chats-btn" class="w-full py-2 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-[var(--text-primary)] hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex items-center justify-center shadow-sm mb-2"><i class="fa-solid fa-download mr-2"></i><span class="sidebar-text font-semibold">Export Chats</span></button>
+                <button id="import-chats-btn" class="w-full py-2 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-[var(--text-primary)] hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-upload mr-2"></i><span class="sidebar-text font-semibold">Import Chats</span></button>
+            </div>
         </div>
         <div id="workspace-sidebar-content" class="hidden flex-col flex-1 overflow-y-auto -mr-4 pr-4">
-            <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span></button>
+            <button id="new-project-btn" class="w-full py-2.5 px-3 rounded-lg bg-[var(--fourth-of-july-blue)] text-white hover:opacity-90 mb-4 transition-all text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-plus mr-2"></i><span class="sidebar-text font-semibold">New Project</span></button>
             <nav id="project-list" class="flex-1 overflow-y-auto space-y-1"></nav>
+             <div class="mt-4 pt-4 border-t border-[var(--border-color)]">
+                <button id="export-projects-btn" class="w-full py-2 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-[var(--text-primary)] hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex items-center justify-center shadow-sm mb-2"><i class="fa-solid fa-download mr-2"></i><span class="sidebar-text font-semibold">Export Projects</span></button>
+                <button id="import-projects-btn" class="w-full py-2 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-[var(--text-primary)] hover:bg-gray-300 dark:hover:bg-gray-600 text-sm flex items-center justify-center shadow-sm"><i class="fa-solid fa-upload mr-2"></i><span class="sidebar-text font-semibold">Import Projects</span></button>
+            </div>
         </div>
     </aside>
 
@@ -88,9 +125,14 @@
 
         <div id="chatbot-view" class="flex flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
              <div id="welcome-message" class="text-center pt-16">
-                <div class="inline-block p-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 mb-6 shadow-lg"><i class="fa-solid fa-wand-magic-sparkles text-5xl text-white"></i></div>
-                <h1 class="text-4xl font-bold font-['Space_Grotesk']">FugthAI</h1>
-                <p class="text-[var(--text-secondary)] mt-2">How can I help you today?</p>
+                <div class="inline-block p-5 rounded-full firework-gradient mb-6 shadow-lg"><i class="fa-solid fa-fireworks text-5xl text-white"></i></div>
+                <h1 class="text-4xl font-bold font-['Space_Grotesk'] firework-text">FugthAI</h1>
+                <p class="text-[var(--text-secondary)] mt-2">Your AI companion for a sparkling 4th of July!</p>
+                <div class="mt-8 space-y-4 max-w-md mx-auto">
+                    <button class="quick-start-prompt w-full py-3 px-4 rounded-lg bg-[var(--fourth-of-july-blue)] text-white hover:opacity-90 text-sm shadow-md transition-all" data-prompt="What are some fun facts about the 4th of July?">Fun Facts about July 4th</button>
+                    <button class="quick-start-prompt w-full py-3 px-4 rounded-lg bg-[var(--fourth-of-july-red)] text-white hover:opacity-90 text-sm shadow-md transition-all" data-prompt="Give me a simple recipe for a summer BBQ.">BBQ Recipe Idea</button>
+                    <button class="quick-start-prompt w-full py-3 px-4 rounded-lg bg-gray-300 text-[var(--text-primary)] hover:opacity-90 text-sm shadow-md transition-all dark:bg-gray-700 dark:text-white" data-prompt="Suggest some patriotic songs.">Patriotic Songs</button>
+                </div>
             </div>
             <div id="chat-history" class="space-y-6"></div>
         </div>
@@ -98,19 +140,42 @@
         <div id="workspace-view" class="hidden flex-col flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
                 <h3 class="text-lg font-bold mb-2 font-['Space_Grotesk']">Generated Script</h3>
-                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[300px] overflow-auto">
-                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet. Select a project and use the controls below.</code></pre>
+                <div id="workspace-script-container" class="prose max-w-none flex-1 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md text-sm min-h-[300px] overflow-auto relative">
+                    <pre><code id="workspace-script" class="language-plaintext">No script generated yet. Select a project and use the controls below.</code><button class="copy-btn hidden">Copy</button></pre>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button id="copy-script-btn" class="action-btn p-2 rounded-md"><i class="fa-solid fa-copy mr-1"></i>Copy Script</button>
+                    <button id="save-script-file-btn" class="action-btn p-2 rounded-md"><i class="fa-solid fa-file-download mr-1"></i>Save to File</button>
                 </div>
             </div>
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
                 <h3 class="text-lg font-bold font-['Space_Grotesk']">Generation Controls</h3>
                 <div class="bg-black/5 dark:bg-white/5 p-3 rounded-md my-4 space-y-3">
-                    <textarea id="workspace-prompt" placeholder="Describe the script you want to create..." class="w-full h-24 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
+                    <textarea id="workspace-prompt" placeholder="Describe the script you want to create (e.g., 'A Python script to fetch weather data')..." class="w-full h-24 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
                     <div>
-                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--accent)]">100</span></label>
-                        <input id="line-count-slider" type="range" min="0" max="3000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                        <label for="line-count-slider" class="block text-sm font-medium text-[var(--text-secondary)]">Desired Lines of Code: <span id="line-count-value" class="font-bold text-[var(--fourth-of-july-blue)]">100</span></label>
+                        <input id="line-count-slider" type="range" min="0" max="5000" value="100" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                     </div>
-                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script</button>
+                    <div class="relative">
+                        <select id="script-language-select" class="bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md py-1.5 pl-3 pr-8 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--accent)] w-full">
+                            <option value="plaintext">Auto-detect</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="java">Java</option>
+                            <option value="csharp">C#</option>
+                            <option value="php">PHP</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="go">Go</option>
+                            <option value="sql">SQL</option>
+                            <option value="bash">Bash</option>
+                            <option value="json">JSON</option>
+                            <option value="xml">XML</option>
+                        </select>
+                        <i class="fa-solid fa-code absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] pointer-events-none"></i>
+                    </div>
+                    <button id="generate-script-btn" class="w-full py-2 px-4 rounded-lg bg-[var(--fourth-of-july-blue)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Generate Script</button>
                 </div>
             </div>
             <div class="bg-[var(--bg-sidebar)] p-4 rounded-lg border border-[var(--border-color)]">
@@ -125,7 +190,7 @@
                         <textarea id="refine-notes" placeholder="e.g., 'This function is too slow, make it more efficient.' or 'Add a score counter to the game.'" class="w-full h-32 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-y"></textarea>
                     </div>
                 </div>
-                <button id="refine-code-btn" class="mt-4 w-full py-2 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wrench mr-2"></i>Refine & Improve Code</button>
+                <button id="refine-code-btn" class="mt-4 w-full py-2 px-4 rounded-lg bg-[var(--fourth-of-july-red)] text-white hover:opacity-90 text-sm flex items-center justify-center shadow-sm disabled:opacity-50" disabled><i class="fa-solid fa-wrench mr-2"></i>Refine & Improve Code</button>
             </div>
         </div>
         
@@ -133,7 +198,7 @@
             <div class="max-w-4xl mx-auto">
                 <div class="relative flex items-center bg-[var(--bg-input)] rounded-2xl shadow-md border border-[var(--border-color)] focus-within:border-[var(--accent)]">
                     <textarea id="prompt-input" rows="1" class="w-full bg-transparent p-3 outline-none resize-none disabled:opacity-50" placeholder="Ask FugthAI anything…"></textarea>
-                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button id="send-btn" class="p-3 m-1 rounded-lg bg-[var(--fourth-of-july-blue)] text-white hover:opacity-90 disabled:opacity-50"><i class="fa-solid fa-arrow-up"></i></button>
                 </div>
             </div>
         </footer>
@@ -142,13 +207,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
 
-    const HUGGING_FACE_URL = "https://fugthchat-fugth-founder-ai.hf.space";
+    // Using a placeholder URL for the Hugging Face space.
+    // **IMPORTANT**: Replace this with your actual Hugging Face Space URL.
+    const HUGGING_FACE_URL = "https://your-hugging-face-space-url.hf.space"; 
     
     const LOCAL_STORAGE_KEY = {
-        CHATS: 'fugthai_chats_v24',
-        THEME: 'fugthai_theme_v24',
-        PROJECTS: 'fugthai_projects_v24'
+        CHATS: 'fugthai_chats_v25', // Updated version for new features
+        THEME: 'fugthai_theme_v25',
+        PROJECTS: 'fugthai_projects_v25' // Updated version for new features
     };
     
     let state = {
@@ -175,7 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'new-chat-btn', 'chat-list', 'new-project-btn', 'project-list',
         'workspace-prompt', 'workspace-script', 'generate-script-btn',
         'workspace-script-container', 'line-count-slider', 'line-count-value',
-        'error-log', 'refine-notes', 'refine-code-btn'
+        'error-log', 'refine-notes', 'refine-code-btn',
+        'script-language-select', 'copy-script-btn', 'save-script-file-btn',
+        'export-chats-btn', 'import-chats-btn', 'export-projects-btn', 'import-projects-btn'
     ];
     elIds.forEach(id => {
         const camelCaseId = id.replace(/-([a-z])/g, g => g[1].toUpperCase());
@@ -186,6 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme();
         addEventListeners();
         checkServerStatus();
+        renderChatList();
+        renderProjectList();
+        switchTab(state.activeTab); // Ensure correct tab is active on load
     }
 
     const save = {
@@ -262,11 +335,70 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         el.chatHistory.appendChild(messageContainer);
         el.chatbotView.scrollTop = el.chatbotView.scrollHeight;
+        addCodeCopyButtons(messageContainer); // Add copy buttons to code blocks within messages
         return messageContainer;
     }
     
+    function addCodeCopyButtons(element) {
+        element.querySelectorAll('pre').forEach(pre => {
+            if (!pre.querySelector('.copy-btn')) { // Prevent adding multiple buttons
+                const button = document.createElement('button');
+                button.className = 'copy-btn';
+                button.textContent = 'Copy';
+                button.onclick = () => {
+                    navigator.clipboard.writeText(pre.textContent).then(() => {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => button.textContent = 'Copy', 2000);
+                    });
+                };
+                pre.appendChild(button);
+            }
+        });
+    }
+
+    function renderChatList() {
+        el.chatList.innerHTML = '';
+        state.chats.forEach(chat => {
+            const chatItem = document.createElement('div');
+            chatItem.className = `flex items-center justify-between group p-2 rounded-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 ${state.activeChatId === chat.id ? 'bg-black/5 dark:bg-white/10' : ''}`;
+            chatItem.dataset.chatId = chat.id;
+            chatItem.innerHTML = `
+                <span class="text-sm font-medium truncate sidebar-text">${chat.name}</span>
+                <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button data-action="rename-chat" class="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-[var(--text-secondary)]"><i class="fa-solid fa-pencil text-xs"></i></button>
+                    <button data-action="delete-chat" class="p-1 hover:bg-red-500/20 rounded-md text-[var(--danger)]"><i class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            `;
+            el.chatList.appendChild(chatItem);
+        });
+    }
+    
+    function renderProjectList() {
+        el.projectList.innerHTML = '';
+        state.projects.forEach(project => {
+            const projectItem = document.createElement('div');
+            projectItem.className = `flex items-center justify-between group p-2 rounded-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 ${state.activeProjectId === project.id ? 'bg-black/5 dark:bg-white/10' : ''}`;
+            projectItem.dataset.projectId = project.id;
+            projectItem.innerHTML = `
+                <span class="text-sm font-medium truncate sidebar-text">${project.name}</span>
+                <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button data-action="rename-project" class="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-md text-[var(--text-secondary)]"><i class="fa-solid fa-pencil text-xs"></i></button>
+                    <button data-action="delete-project" class="p-1 hover:bg-red-500/20 rounded-md text-[var(--danger)]"><i class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            `;
+            el.projectList.appendChild(projectItem);
+        });
+    }
+
     function selectChat(id) {
-        if (!id) return;
+        if (!id) {
+            el.viewTitle.textContent = "New Chat";
+            el.chatHistory.innerHTML = '';
+            el.welcomeMessage.style.display = 'block';
+            state.activeChatId = null;
+            renderChatList();
+            return;
+        }
         state.activeChatId = id;
         const chat = state.chats.find(c => c.id === id);
         if (chat) {
@@ -274,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.chatHistory.innerHTML = '';
             el.welcomeMessage.style.display = chat.history.length === 0 ? 'block' : 'none';
             chat.history.forEach((m, i) => addMessageToHistory(m.role, m.text, { ...m, index: i }));
+            el.chatbotView.scrollTop = el.chatbotView.scrollHeight;
         }
         renderChatList();
     }
@@ -284,6 +417,10 @@ document.addEventListener('DOMContentLoaded', () => {
             el.workspacePrompt.value = "";
             el.workspaceScript.textContent = "Select or create a project.";
             hljs.highlightElement(el.workspaceScript);
+            state.activeProjectId = null;
+            el.generateScriptBtn.disabled = true;
+            el.refineCodeBtn.disabled = true;
+            renderProjectList();
             return;
         }
         state.activeProjectId = id;
@@ -291,8 +428,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (project) {
             el.viewTitle.textContent = project.name;
             el.workspacePrompt.value = project.prompt || "";
-            el.workspaceScript.textContent = project.script || "No script generated yet.";
+            el.workspaceScript.textContent = project.script || "No script generated yet. Enter a prompt and click 'Generate Script'.";
+            el.scriptLanguageSelect.value = project.language || 'plaintext'; // Set the language select
             hljs.highlightElement(el.workspaceScript);
+            el.generateScriptBtn.disabled = false;
+            el.refineCodeBtn.disabled = false;
         }
         renderProjectList();
     }
@@ -307,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createNewProject(isInitial = false) {
         const projectName = isInitial ? 'My First Project' : prompt('Enter a name for your new project:');
         if (!projectName) return;
-        const newProject = { id: Date.now(), name: projectName, prompt: '', script: '' };
+        const newProject = { id: Date.now(), name: projectName, prompt: '', script: '', language: 'plaintext' };
         state.projects.unshift(newProject);
         save.projects();
         selectProject(newProject.id);
@@ -316,20 +456,32 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkServerStatus() {
         updateStatus('connecting', 'Connecting to AI Server...');
         try {
-            const response = await fetch(HUGGING_FACE_URL);
+            const response = await fetch(`${HUGGING_FACE_URL}/`); // Ping endpoint
             if (!response.ok) throw new Error(`Server offline (${response.status})`);
-            const data = await response.json();
+            const data = await response.json(); // Assuming it returns model info
             state.availableModels = data.available_models;
             populateModelSwitcher();
             el.modelSwitcher.value = data.model_loaded;
             updateStatus('connected', `AI Server Online`);
             el.promptInput.disabled = false;
             el.sendBtn.disabled = false;
-            el.generateScriptBtn.disabled = false;
-            el.refineCodeBtn.disabled = false;
+            
+            // Enable workspace buttons if a project is selected
+            if (state.activeTab === 'workspace' && state.activeProjectId) {
+                el.generateScriptBtn.disabled = false;
+                el.refineCodeBtn.disabled = false;
+            } else if (state.activeTab === 'workspace' && !state.activeProjectId) {
+                el.generateScriptBtn.disabled = true;
+                el.refineCodeBtn.disabled = true;
+            }
         } catch (error) {
+            console.error("Server connection failed:", error);
             updateStatus('failed', `Connection Failed. Retrying...`);
             setTimeout(checkServerStatus, 5000);
+            el.promptInput.disabled = true;
+            el.sendBtn.disabled = true;
+            el.generateScriptBtn.disabled = true;
+            el.refineCodeBtn.disabled = true;
         }
     }
 
@@ -350,21 +502,30 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isGenerating = isGenerating;
         clearInterval(state.thinkingTimerInterval);
         el.sendBtn.disabled = isGenerating;
-        el.generateScriptBtn.disabled = isGenerating;
-        el.refineCodeBtn.disabled = isGenerating;
         el.promptInput.disabled = isGenerating;
         el.modelSwitcher.disabled = isGenerating;
+
+        // Workspace specific buttons
+        if (state.activeTab === 'workspace' && state.activeProjectId) {
+            el.generateScriptBtn.disabled = isGenerating;
+            el.refineCodeBtn.disabled = isGenerating;
+        } else if (state.activeTab === 'workspace' && !state.activeProjectId) {
+            el.generateScriptBtn.disabled = true;
+            el.refineCodeBtn.disabled = true;
+        }
+
+
         if(isGenerating) {
             state.thinkingTimerInterval = setInterval(() => {
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
                 updateStatus('generating', `Assistant is thinking... (${elapsed}s)`);
             }, 100);
         } else {
-             updateStatus('connected', 'AI Server Online');
+            updateStatus('connected', 'AI Server Online');
         }
     }
 
-    async function getAiResponse(prompt, targetElement, saveCallback) {
+    async function getAiResponse(prompt, targetElement, saveCallback, isCode = false, language = 'plaintext') {
         const selectedModel = el.modelSwitcher.value;
         const startTime = Date.now();
         setGenerating(true, startTime);
@@ -377,18 +538,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ prompt, model_id: selectedModel }),
                 signal: state.abortController.signal
             });
-            if (!res.ok) throw new Error(`Request failed: ${res.status} ${await res.text()}`);
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Request failed: ${res.status} ${errorText}`);
+            }
             if (!res.body) throw new Error("Streaming not supported");
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            if(targetElement) targetElement.textContent = ''; 
+            if(targetElement) {
+                targetElement.textContent = ''; // Clear content for streaming
+                if (targetElement.tagName !== 'CODE' && targetElement.querySelector('.text-content')) {
+                     targetElement.querySelector('.text-content').innerHTML = '<span class="blinking-cursor">▍</span>';
+                }
+            }
+            
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 fullResponse += decoder.decode(value, { stream: true });
+
                 if (targetElement) {
-                    if (targetElement.tagName === 'CODE') {
+                    if (isCode) {
                         targetElement.textContent = fullResponse;
+                        // Do not highlight on every chunk for performance, only at the end
                     } else {
                         targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse + '<span class="blinking-cursor">▍</span>');
                     }
@@ -396,80 +568,105 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const duration = Date.now() - startTime;
             if(targetElement) {
-                if (targetElement.tagName === 'CODE') {
+                if (isCode) {
                     targetElement.textContent = fullResponse;
                     hljs.highlightElement(targetElement);
+                    if (el.copyScriptBtn) el.copyScriptBtn.dataset.code = fullResponse;
+                    if (el.saveScriptFileBtn) el.saveScriptFileBtn.dataset.code = fullResponse;
                 } else {
                     targetElement.querySelector('.text-content').innerHTML = marked.parse(fullResponse);
-                    addMessageToHistory.addCodeCopyButtons(targetElement);
+                    addCodeCopyButtons(targetElement); // Apply HLJS and copy buttons to code blocks within chat messages
                 }
             }
             if (saveCallback) saveCallback(fullResponse, duration);
         } catch (e) {
             const errorMessage = e.name === 'AbortError' ? 'Request cancelled.' : `An error occurred: ${e.message}`;
             const errorEl = targetElement.tagName === 'CODE' ? targetElement : targetElement.querySelector('.text-content');
-            if(errorEl) errorEl.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
+            if(errorEl) {
+                errorEl.innerHTML = `<span class="text-[var(--danger)]">${errorMessage}</span>`;
+            }
+            console.error("AI Response Error:", e);
         } finally {
             setGenerating(false);
-            checkServerStatus();
+            checkServerStatus(); // Re-check server status after generation
         }
     }
 
-    async function handleSend(isRedo = false) {
+    async function handleSend(isRedo = false, initialPrompt = null) {
         const activeChat = state.chats.find(c => c.id === state.activeChatId);
         if (!activeChat || state.isGenerating) return;
+        
         let promptText;
         if (isRedo) {
             const lastUserMessage = [...activeChat.history].reverse().find(m => m.role === 'user');
             if (!lastUserMessage) return;
             promptText = lastUserMessage.text;
+            // Remove the last assistant message if redoing
             if (activeChat.history.length > 0 && activeChat.history[activeChat.history.length - 1].role === 'assistant') {
                 activeChat.history.pop();
             }
         } else {
-            promptText = el.promptInput.value.trim();
+            promptText = initialPrompt || el.promptInput.value.trim();
             if (!promptText) return;
             activeChat.history.push({ role: 'user', text: promptText });
         }
-        selectChat(activeChat.id);
+        
+        selectChat(activeChat.id); // Re-render chat to show new user message
+        
         if (activeChat.name === 'New Chat' && activeChat.history.length === 1) {
             activeChat.name = promptText.substring(0, 40) + (promptText.length > 40 ? '...' : '');
             renderChatList();
             el.viewTitle.textContent = activeChat.name;
         }
+
         const assistantMessageContainer = addMessageToHistory('assistant', '', { index: activeChat.history.length });
         el.promptInput.value = '';
-        el.promptInput.style.height = 'auto';
+        el.promptInput.style.height = 'auto'; // Reset textarea height
+
         const promptForApi = `<|system|>\nYou are a helpful AI assistant.</s>\n<|user|>\n${promptText}</s>\n<|assistant|>\n`;
         getAiResponse(promptForApi, assistantMessageContainer, (response, duration) => {
             const newBotMessage = { role: 'assistant', text: response, duration, feedback: null };
             activeChat.history.push(newBotMessage);
             save.chats();
-            selectChat(activeChat.id);
+            selectChat(activeChat.id); // Re-render to update feedback state and ensure HLJS
         });
     }
 
     async function handleGenerateScript() {
         const project = state.projects.find(p => p.id === state.activeProjectId);
         const userPrompt = el.workspacePrompt.value.trim();
+        const selectedLanguage = el.scriptLanguageSelect.value;
         if (!project || !userPrompt || state.isGenerating) {
             alert("Please select a project and describe the script you want to create.");
             return;
         }
-        project.prompt = userPrompt;
+        
+        project.prompt = userPrompt; // Save the prompt
+        project.language = selectedLanguage; // Save the selected language
+
         const lineCount = el.lineCountSlider.value;
         const lineInstruction = lineCount > 0 ? `The script should be approximately ${lineCount} lines long.` : '';
-        const prompt = `<|system|>You are an expert programmer. Generate a complete script based on the following request. ${lineInstruction} Only output raw code without explanations.</s>\n<|user|>\nRequest: "${userPrompt}"</s>\n<|assistant|>`.trim();
+        const languageInstruction = selectedLanguage !== 'plaintext' ? `It must be in ${selectedLanguage} language.` : '';
+
+        const prompt = `<|system|>You are an expert programmer. Generate a complete script based on the following request. ${lineInstruction} ${languageInstruction} Only output raw code without explanations or markdown formatting.</s>\n<|user|>\nRequest: "${userPrompt}"</s>\n<|assistant|>`.trim();
+        
         getAiResponse(prompt, el.workspaceScript, (response) => {
             project.script = response;
             save.projects();
-        });
+            // Highlight after saving the script
+            el.workspaceScript.className = `language-${selectedLanguage}`; // Set language for highlighting
+            hljs.highlightElement(el.workspaceScript);
+            el.copyScriptBtn.dataset.code = response; // Update data for copy button
+            el.saveScriptFileBtn.dataset.code = response; // Update data for save button
+        }, true, selectedLanguage); // Pass true for isCode
     }
 
     async function handleRefineCode() {
         const project = state.projects.find(p => p.id === state.activeProjectId);
         const errorLog = el.errorLog.value.trim();
         const refineNotes = el.refineNotes.value.trim();
+        const selectedLanguage = el.scriptLanguageSelect.value;
+
         if (!project || !project.script || state.isGenerating) {
             alert("Please generate a script first before trying to refine it.");
             return;
@@ -478,11 +675,13 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Please provide either an error log or some notes/requests for refinement.");
             return;
         }
+        
         const errorPromptPart = errorLog ? `When I ran the script, I got this error:\n--- ERROR LOG ---\n${errorLog}\n--- END ERROR LOG ---\n` : '';
         const notesPromptPart = refineNotes ? `Here are my notes and requests for changes:\n--- USER NOTES ---\n${refineNotes}\n--- END USER NOTES ---\n` : '';
+        
         const prompt = `
 <|system|>
-You are an expert programmer and debugger. Your task is to analyze the provided code and user feedback to provide a corrected and improved version of the script. Only output the complete, raw code for the fixed script, without any additional explanations or markdown formatting.
+You are an expert programmer and debugger. Your task is to analyze the provided code and user feedback to provide a corrected and improved version of the script. Only output the complete, raw code for the fixed script, without any additional explanations or markdown formatting. If the language is specified as '${selectedLanguage}', ensure the output is in that language.
 </s>
 <|user|>
 Here is the script that needs refinement:
@@ -495,25 +694,93 @@ Please provide the complete, corrected and improved script now.
 </s>
 <|assistant|>
 `.trim();
+        
         getAiResponse(prompt, el.workspaceScript, (response) => {
             project.script = response;
             save.projects();
             el.errorLog.value = '';
             el.refineNotes.value = '';
-        });
+            // Highlight after saving the script
+            el.workspaceScript.className = `language-${selectedLanguage}`; // Set language for highlighting
+            hljs.highlightElement(el.workspaceScript);
+            el.copyScriptBtn.dataset.code = response; // Update data for copy button
+            el.saveScriptFileBtn.dataset.code = response; // Update data for save button
+        }, true, selectedLanguage); // Pass true for isCode
     }
 
     function addEventListeners() {
+        // Theme Toggle
         el.themeBtn.onclick = () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
+
+        // Sidebar Toggle for mobile
+        el.toggleLeftSidebar.onclick = () => {
+            el.leftSidebar.classList.toggle('w-72');
+            el.leftSidebar.classList.toggle('w-20');
+            el.leftSidebar.classList.toggle('translate-x-0');
+            el.leftSidebar.classList.toggle('-translate-x-full');
+            el.sidebarOverlay.classList.toggle('opacity-0');
+            el.sidebarOverlay.classList.toggle('pointer-events-none');
+        };
+        el.sidebarOverlay.onclick = () => {
+            el.leftSidebar.classList.remove('w-72', 'translate-x-0');
+            el.leftSidebar.classList.add('w-20', '-translate-x-full');
+            el.sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+        };
+
+        // Tab Switching
         el.chatbotTabBtn.onclick = () => switchTab('chatbot');
         el.workspaceTabBtn.onclick = () => switchTab('workspace');
+
+        // Chatbot Tab Actions
         el.newChatBtn.onclick = createNewChat;
-        el.newProjectBtn.onclick = () => createNewProject(false);
         el.sendBtn.onclick = () => handleSend(false);
-        el.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(false); }});
-        el.generateScriptBtn.onclick = handleGenerateScript;
-        el.refineCodeBtn.onclick = handleRefineCode;
-        el.lineCountSlider.addEventListener('input', (e) => { el.lineCountValue.textContent = e.target.value; });
+        el.promptInput.addEventListener('keydown', (e) => { 
+            if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                handleSend(false); 
+            }
+            el.promptInput.style.height = 'auto'; // Reset height
+            el.promptInput.style.height = el.promptInput.scrollHeight + 'px'; // Adjust height
+        });
+        el.promptInput.addEventListener('input', () => { // For manual resizing
+             el.promptInput.style.height = 'auto';
+             el.promptInput.style.height = el.promptInput.scrollHeight + 'px';
+        });
+
+        // Chat List Actions (rename, delete, select, redo, copy, feedback)
+        el.chatList.addEventListener('click', (e) => {
+            const item = e.target.closest('div[data-chat-id]');
+            if (!item) return; // Clicked outside a chat item
+
+            const chatId = parseInt(item.dataset.chatId);
+            const activeChat = state.chats.find(c => c.id === chatId);
+
+            if (e.target.closest('[data-action="rename-chat"]')) {
+                const newName = prompt('Enter new chat name:', activeChat.name);
+                if (newName && newName.trim() !== "") {
+                    activeChat.name = newName.trim();
+                    save.chats();
+                    renderChatList();
+                    if (state.activeChatId === chatId) {
+                        el.viewTitle.textContent = newName.trim();
+                    }
+                }
+            } else if (e.target.closest('[data-action="delete-chat"]')) {
+                if (confirm('Are you sure you want to delete this chat?')) {
+                    state.chats = state.chats.filter(c => c.id !== chatId);
+                    save.chats();
+                    if (state.activeChatId === chatId) {
+                        state.activeChatId = state.chats[0]?.id || null; // Select first chat or null
+                        selectChat(state.activeChatId);
+                    } else {
+                        renderChatList();
+                    }
+                }
+            } else { // Select chat
+                selectChat(chatId);
+            }
+        });
+
         el.chatHistory.addEventListener('click', (e) => {
             const button = e.target.closest('[data-action]');
             if (!button) return;
@@ -522,36 +789,214 @@ Please provide the complete, corrected and improved script now.
             const messageIndex = parseInt(messageContainer.dataset.messageIndex);
             const activeChat = state.chats.find(c => c.id === state.activeChatId);
             const message = activeChat.history[messageIndex];
+            
             switch(action) {
-                case 'like': message.feedback = message.feedback === 'like' ? null : 'like'; break;
-                case 'dislike': message.feedback = message.feedback === 'dislike' ? null : 'dislike'; break;
+                case 'like': 
+                    message.feedback = message.feedback === 'like' ? null : 'like'; 
+                    // Remove dislike if already liked
+                    if (message.feedback === 'like' && message.feedback === 'dislike') {
+                        message.feedback = null;
+                    }
+                    break;
+                case 'dislike': 
+                    message.feedback = message.feedback === 'dislike' ? null : 'dislike'; 
+                    // Remove like if already disliked
+                    if (message.feedback === 'dislike' && message.feedback === 'like') {
+                        message.feedback = null;
+                    }
+                    break;
                 case 'redo': handleSend(true); return;
-                case 'copy': navigator.clipboard.writeText(message.text); button.innerHTML = '<i class="fa-solid fa-check"></i>'; setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000); return;
+                case 'copy': 
+                    const contentToCopy = messageContainer.querySelector('.text-content').innerText; // Use innerText to get formatted text
+                    navigator.clipboard.writeText(contentToCopy); 
+                    button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!'; 
+                    setTimeout(() => { button.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 2000); 
+                    return;
             }
             save.chats();
-            selectChat(activeChat.id);
+            selectChat(activeChat.id); // Re-render to update feedback buttons state
         });
+
+        // Quick Start Prompts
+        $$('.quick-start-prompt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const prompt = btn.dataset.prompt;
+                handleSend(false, prompt);
+            });
+        });
+
+        // Workspace Tab Actions
+        el.newProjectBtn.onclick = () => createNewProject(false);
+        el.generateScriptBtn.onclick = handleGenerateScript;
+        el.refineCodeBtn.onclick = handleRefineCode;
+        el.lineCountSlider.addEventListener('input', (e) => { el.lineCountValue.textContent = e.target.value; });
+        
+        // Workspace List Actions (rename, delete, select)
         el.projectList.addEventListener('click', (e) => {
-            const item = e.target.closest('.project-item');
-            if (e.target.closest('[data-action="delete-project"]')) {
-                 if (confirm('Are you sure you want to delete this project?')) {
-                    const projectId = parseInt(item.dataset.projectId);
+            const item = e.target.closest('div[data-project-id]');
+            if (!item) return; // Clicked outside a project item
+
+            const projectId = parseInt(item.dataset.projectId);
+            const activeProject = state.projects.find(p => p.id === projectId);
+
+            if (e.target.closest('[data-action="rename-project"]')) {
+                const newName = prompt('Enter new project name:', activeProject.name);
+                if (newName && newName.trim() !== "") {
+                    activeProject.name = newName.trim();
+                    save.projects();
+                    renderProjectList();
+                    if (state.activeProjectId === projectId) {
+                        el.viewTitle.textContent = newName.trim();
+                    }
+                }
+            } else if (e.target.closest('[data-action="delete-project"]')) {
+                if (confirm('Are you sure you want to delete this project?')) {
                     state.projects = state.projects.filter(p => p.id !== projectId);
                     save.projects();
                     if (state.activeProjectId === projectId) {
                         state.activeProjectId = state.projects[0]?.id || null;
                         selectProject(state.activeProjectId);
                     } else { renderProjectList(); }
-                 }
-            } else if (item) { selectProject(parseInt(item.dataset.projectId)); }
+                }
+            } else { // Select project
+                selectProject(projectId);
+            }
         });
+
+        // Save workspace prompt on input
         el.workspacePrompt.addEventListener('input', () => {
-             const project = state.projects.find(p => p.id === state.activeProjectId);
-             if (project) {
+            const project = state.projects.find(p => p.id === state.activeProjectId);
+            if (project) {
                 project.prompt = el.workspacePrompt.value;
                 save.projects();
-             }
+            }
         });
+
+        // Save workspace language on change
+        el.scriptLanguageSelect.addEventListener('change', () => {
+            const project = state.projects.find(p => p.id === state.activeProjectId);
+            if (project) {
+                project.language = el.scriptLanguageSelect.value;
+                save.projects();
+                // Re-highlight with new language if script exists
+                if (project.script) {
+                    el.workspaceScript.className = `language-${project.language}`;
+                    hljs.highlightElement(el.workspaceScript);
+                }
+            }
+        });
+
+        // Copy and Save buttons for workspace script
+        el.copyScriptBtn.onclick = () => {
+            const code = el.workspaceScript.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                el.copyScriptBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Copied!';
+                setTimeout(() => el.copyScriptBtn.innerHTML = '<i class="fa-solid fa-copy mr-1"></i>Copy Script', 2000);
+            });
+        };
+
+        el.saveScriptFileBtn.onclick = () => {
+            const code = el.workspaceScript.textContent;
+            const project = state.projects.find(p => p.id === state.activeProjectId);
+            const filename = project ? `${project.name}.${project.language}` : `script.txt`;
+            const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        };
+
+        // Export/Import functionality
+        el.exportChatsBtn.onclick = () => {
+            const dataStr = JSON.stringify(state.chats, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "fugthai_chats.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("Chats exported successfully!");
+        };
+
+        el.importChatsBtn.onclick = () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedChats = JSON.parse(event.target.result);
+                            if (Array.isArray(importedChats) && importedChats.every(chat => chat.id && chat.name && Array.isArray(chat.history))) {
+                                state.chats = importedChats;
+                                save.chats();
+                                renderChatList();
+                                selectChat(state.chats[0]?.id || null);
+                                alert("Chats imported successfully!");
+                            } else {
+                                alert("Invalid chat file format.");
+                            }
+                        } catch (error) {
+                            alert("Error parsing JSON file: " + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        };
+
+        el.exportProjectsBtn.onclick = () => {
+            const dataStr = JSON.stringify(state.projects, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "fugthai_projects.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("Projects exported successfully!");
+        };
+
+        el.importProjectsBtn.onclick = () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedProjects = JSON.parse(event.target.result);
+                            if (Array.isArray(importedProjects) && importedProjects.every(proj => proj.id && proj.name)) {
+                                state.projects = importedProjects;
+                                save.projects();
+                                renderProjectList();
+                                selectProject(state.projects[0]?.id || null);
+                                alert("Projects imported successfully!");
+                            } else {
+                                alert("Invalid project file format.");
+                            }
+                        } catch (error) {
+                            alert("Error parsing JSON file: " + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        };
     }
 
     init();
