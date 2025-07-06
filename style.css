@@ -1,0 +1,57 @@
+:root {
+    --accent-color: #3b82f6;
+}
+
+/* Custom scrollbar for a more modern look */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Simple animation for the AI thinking indicator */
+@keyframes pulse-bg {
+    0%, 100% { background-color: #f59e0b; }
+    50% { background-color: #fbbf24; }
+}
+
+.pulse-bg-animation {
+    animation: pulse-bg 2s infinite;
+}
+
+/* Code Editor Styling */
+#code-editor-container {
+    position: relative;
+    height: 100%;
+}
+
+#code-editor {
+    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background-color: #0f172a;
+    color: #cbd5e1;
+    padding: 1rem;
+    line-height: 1.5;
+    outline: none;
+}
+
+/* Highlight.js theme override */
+.hljs {
+    background: transparent !important;
+}
