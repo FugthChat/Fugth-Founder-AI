@@ -1,5 +1,6 @@
 const APP = {
     config: {
+        // This URL points to your live Hugging Face Space backend.
         HUGGING_FACE_URL: "https://fugthchat-fugth-founder-ai.hf.space",
     },
     state: {
@@ -77,7 +78,7 @@ const APP = {
         switchWorkspace(workspace, clickedTab) {
             APP.state.workspaceType = workspace;
             APP.elements.tabs.forEach(tab => {
-                tab.classList.remove('text-white');
+                tab.classList.remove('text-white', 'border-blue-500');
                 tab.style.borderColor = 'transparent';
                 tab.classList.add('text-slate-400');
             });
@@ -117,7 +118,7 @@ const APP = {
                 item.classList.toggle('bg-slate-700', item.dataset.filename === fileName);
             });
             APP.elements.refactorBtn.disabled = false;
-            APP.elements.testGenBtn.disabled = file.language === 'python';
+            APP.elements.testGenBtn.disabled = file.language !== 'python';
         },
         addLogMessage(title, message, type = 'info') {
             const colorMap = { info: 'sky', success: 'emerald', system: 'indigo', error: 'red' };
@@ -207,7 +208,7 @@ const APP = {
 
     // --- Logic Subsystem ---
     logic: {
-        createPrompt(task, context) {
+        createPrompt(task, context = {}) {
             const base = `You are FugthAI, an expert software architect.`;
             const projectContext = `
                 **Project Idea:** "${APP.elements.projectIdea.value}"
@@ -355,7 +356,3 @@ const APP = {
 };
 
 document.addEventListener('DOMContentLoaded', () => APP.init());
-</script>
-
-</body>
-</html>
