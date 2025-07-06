@@ -5,467 +5,425 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fugth - AI Development Environment</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <style>
-        /* Custom scrollbar for a more modern look */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-        /* Simple animation for the AI thinking indicator */
+        :root { --accent-color: #3b82f6; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         @keyframes pulse-bg {
             0%, 100% { background-color: #f59e0b; }
             50% { background-color: #fbbf24; }
         }
-        .pulse-bg-animation {
-            animation: pulse-bg 2s infinite;
+        .pulse-bg-animation { animation: pulse-bg 2s infinite; }
+        #code-editor-container { position: relative; height: 100%; }
+        #code-editor {
+            font-family: 'SF Mono', 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: auto;
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-color: #0f172a;
+            color: #cbd5e1;
+            padding: 1rem;
+            line-height: 1.5;
         }
+        .hljs { background: transparent !important; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans antialiased flex flex-col h-screen overflow-hidden">
 
-    <!-- Top Header Bar: Command & Control -->
     <header class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 px-4 py-2 flex items-center justify-between flex-shrink-0 z-20">
         <div class="flex items-center gap-4">
-            <h1 class="text-xl font-bold text-white">Fugth</h1>
-            <!-- Model Selector Dropdown -->
-            <div class="relative" id="model-selector-dropdown">
-                <button onclick="toggleDropdown('model-selector-dropdown')" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md text-sm transition-colors">
-                    <span id="active-model-name">CodeLlama-13B-GGUF</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <h1 class="text-xl font-bold text-white">🚀 Fugth</h1>
+            <div class="relative" id="model-selector-container">
+                <button onclick="APP.ui.toggleDropdown('model-selector-container')" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md text-sm transition-colors">
+                    <span id="active-model-name">Loading...</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div class="absolute mt-2 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden">
-                    <a href="#" onclick="selectModel(this, 'CodeLlama-13B-GGUF')" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">CodeLlama-13B-GGUF <span class="text-xs bg-sky-500/50 text-sky-200 px-1.5 py-0.5 rounded-full ml-2">Code</span></a>
-                    <a href="#" onclick="selectModel(this, 'Mistral-7B-Instruct-GGUF')" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Mistral-7B-Instruct-GGUF <span class="text-xs bg-emerald-500/50 text-emerald-200 px-1.5 py-0.5 rounded-full ml-2">Chat</span></a>
-                    <a href="#" onclick="selectModel(this, 'Fugth-Pro-Finetuned')" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Fugth-Pro-Finetuned <span class="text-xs bg-purple-500/50 text-purple-200 px-1.5 py-0.5 rounded-full ml-2">Analysis</span></a>
-                </div>
+                <div id="model-list" class="absolute mt-2 w-64 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden"></div>
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <!-- AI Activity Monitor & Status -->
             <div id="ai-status-container" class="flex items-center gap-2 text-sm">
-                <div id="ai-status-dot" class="w-3 h-3 bg-green-500 rounded-full transition-colors"></div>
-                <span id="ai-status-text">AI Ready</span>
-            </div>
-            <div id="connection-status-container" class="flex items-center gap-2 text-sm">
-                <div class="w-3 h-3 bg-green-500 rounded-full" title="Connection to server stable"></div>
-                <span>Connected</span>
-            </div>
-             <!-- Download Button Dropdown -->
-            <div class="relative" id="download-dropdown">
-                <button onclick="toggleDropdown('download-dropdown')" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    <span>Export</span>
-                </button>
-                <div class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden">
-                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">📦 Download as .zip</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">▶️ Download as .exe</a>
-                </div>
+                <div id="ai-status-dot" class="w-3 h-3 bg-red-500 rounded-full transition-colors"></div>
+                <span id="ai-status-text">Connecting</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow flex overflow-hidden">
-        <!-- Panel 1: Configuration & Prompts (Left) -->
-        <aside class="w-1/4 xl:w-1/5 bg-slate-800/30 p-4 flex flex-col border-r border-slate-700 overflow-y-auto">
+        <aside class="w-[30%] max-w-sm bg-slate-800/30 p-4 flex flex-col border-r border-slate-700 overflow-y-auto">
             <h2 class="text-lg font-semibold text-white mb-4">Configuration</h2>
-            
-            <!-- Workspace Tabs -->
             <div class="mb-6">
                 <div class="flex border-b border-slate-600">
-                    <button id="tab-software" onclick="switchWorkspace('software')" class="px-4 py-2 -mb-px text-sm font-semibold border-b-2 border-blue-500 text-white focus:outline-none">💻 Software Builder</button>
-                    <button id="tab-site" onclick="switchWorkspace('site')" class="px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none">🌐 Site Maker</button>
+                    <button id="tab-software" onclick="APP.ui.switchWorkspace('software', this)" class="px-4 py-2 -mb-px text-sm font-semibold border-b-2 text-white focus:outline-none" style="border-color: var(--accent-color);">💻 Software</button>
+                    <button id="tab-site" onclick="APP.ui.switchWorkspace('site', this)" class="px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none">🌐 Website</button>
                 </div>
             </div>
-
-            <!-- Project Idea Prompt -->
-            <div class="flex-grow flex flex-col">
-                <label for="project-idea" class="text-sm font-medium mb-2">Project Idea</label>
-                <textarea id="project-idea" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" placeholder="e.g., A simple command-line calculator that can add, subtract, multiply, and divide."></textarea>
-                
-                <!-- Code Verbosity Slider -->
-                <div class="mt-6">
-                    <label for="code-verbosity" class="text-sm font-medium mb-2 block">Code Verbosity & Feature Richness</label>
-                    <input id="code-verbosity" type="range" min="30" max="3000" value="100" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer" oninput="updateVerbosityLabel(this.value)">
+            <div class="flex-grow flex flex-col space-y-6">
+                <div>
+                    <label for="project-idea" class="text-sm font-medium mb-2 block">Project Idea</label>
+                    <textarea id="project-idea" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y" placeholder="e.g., A command-line calculator..."></textarea>
+                </div>
+                <div>
+                    <label for="code-verbosity" class="text-sm font-medium mb-2 block">Code Verbosity</label>
+                    <input id="code-verbosity" type="range" min="50" max="4000" value="200" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer" oninput="APP.ui.updateVerbosityLabel(this.value)">
                     <div class="text-xs text-slate-400 mt-1 flex justify-between">
                         <span>Basic</span>
-                        <span id="verbosity-label" class="font-semibold text-sky-400">100 Lines</span>
+                        <span id="verbosity-label" class="font-semibold text-sky-400">200 Lines</span>
                         <span>Complex</span>
                     </div>
                 </div>
-
-                <!-- Style Palette -->
-                <div class="mt-6">
+                <div>
                     <label for="style-palette" class="text-sm font-medium mb-2">Coding Style</label>
                     <select id="style-palette" class="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         <option>Standard</option>
                         <option>Academic/Verbose</option>
-                        <option>Minimalist</option>
-                        <option>Enterprise-Grade</option>
-                        <option>Learn & Comment</option>
+                        <option>Minimalist & Efficient</option>
+                        <option>Enterprise-Grade (Classes & Modules)</option>
+                        <option>Beginner-Friendly (Heavy Comments)</option>
                     </select>
                 </div>
-
-                <!-- Placeholder Mode Toggle -->
-                <div class="mt-6 flex items-center justify-between">
-                    <label for="placeholder-mode" class="text-sm font-medium">Placeholder Mode</label>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" id="placeholder-mode" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                </div>
             </div>
-
-            <!-- Generate Button -->
             <div class="mt-6">
-                <button onclick="generateProject()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009.894 15V4.106A1 1 0 0010.894 2.553zM10.894 15v-2.286l1.002.286a1 1 0 001.17-1.408l-7-14a1 1 0 00-1.788 0l-1.002-.286V15a1 1 0 001 1h2.106a1 1 0 00.894-.553l7-14a1 1 0 00-1.17-1.408l-5 1.428A1 1 0 009.894 5V15a1 1 0 001 1h.001z"></path></svg>
-                    Generate Project
+                <button id="generate-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50" disabled>
+                    ⚡ Generate Project
                 </button>
             </div>
         </aside>
 
-        <!-- Panel 2: Project & Code (Center) -->
         <section class="flex-grow flex flex-col bg-slate-900">
-            <!-- File Tree and Code Editor Split -->
             <div class="flex flex-grow overflow-hidden">
-                <!-- File Tree -->
-                <div class="w-1/3 xl:w-1/4 bg-slate-800/50 p-4 border-r border-slate-700 overflow-y-auto">
+                <div class="w-1/3 max-w-xs bg-slate-800/50 p-4 border-r border-slate-700 overflow-y-auto">
                     <h3 class="text-md font-semibold text-white mb-3">Project Structure</h3>
                     <ul id="file-tree" class="text-sm space-y-1">
-                        <li>
-                            <span class="flex items-center gap-2 cursor-pointer" onclick="selectFile('main.py', this)">
-                                <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <span class="file-name">main.py</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="flex items-center gap-2 cursor-pointer text-slate-400" onclick="selectFile('readme.md', this)">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <span class="file-name">README.md</span>
-                            </span>
-                        </li>
-                         <li>
-                            <span class="flex items-center gap-2 cursor-pointer text-slate-400" onclick="selectFile('requirements.txt', this)">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <span class="file-name">requirements.txt</span>
-                            </span>
-                        </li>
+                        <li class="text-slate-500">Generate a project to begin.</li>
                     </ul>
                 </div>
-                <!-- Code Editor -->
                 <div class="flex-grow flex flex-col">
                     <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
-                        <span id="current-file-name" class="text-sm font-medium text-white">main.py</span>
-                        <div class="flex items-center gap-4">
-                             <button class="text-slate-400 hover:text-white text-sm flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg>
-                                Refactor
-                            </button>
-                             <button class="text-slate-400 hover:text-white text-sm flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Generate Tests
-                            </button>
-                        </div>
+                        <span id="current-file-name" class="text-sm font-medium text-white">No File Selected</span>
+                        <button id="refactor-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>
+                            ✨ Refactor
+                        </button>
                     </div>
-                    <div class="flex-grow bg-slate-900 overflow-auto">
-                        <pre class="h-full"><code id="code-editor" class="language-python text-sm p-4 block w-full h-full focus:outline-none" contenteditable="true">
-# main.py - A simple calculator
-# Generated by Fugth AI
-
-def add(x, y):
-    """This function adds two numbers"""
-    return x + y
-
-def subtract(x, y):
-    """This function subtracts two numbers"""
-    return x - y
-
-def multiply(x, y):
-    """This function multiplies two numbers"""
-    return x * y
-
-def divide(x, y):
-    """This function divides two numbers"""
-    if y == 0:
-        return "Error! Division by zero."
-    return x / y
-
-def main():
-    print("Select operation:")
-    print("1. Add")
-    print("2. Subtract")
-    print("3. Multiply")
-    print("4. Divide")
-
-    while True:
-        choice = input("Enter choice(1/2/3/4): ")
-
-        if choice in ('1', '2', '3', '4'):
-            try:
-                num1 = float(input("Enter first number: "))
-                num2 = float(input("Enter second number: "))
-            except ValueError:
-                print("Invalid input. Please enter numbers.")
-                continue
-
-            if choice == '1':
-                print(num1, "+", num2, "=", add(num1, num2))
-
-            elif choice == '2':
-                print(num1, "-", num2, "=", subtract(num1, num2))
-
-            elif choice == '3':
-                print(num1, "*", num2, "=", multiply(num1, num2))
-
-            elif choice == '4':
-                print(num1, "/", num2, "=", divide(num1, num2))
-            
-            next_calculation = input("Let's do next calculation? (yes/no): ")
-            if next_calculation.lower() != 'yes':
-                break
-        else:
-            print("Invalid Input")
-
-if __name__ == "__main__":
-    main()
-                        </code></pre>
+                    <div id="code-editor-container" class="flex-grow bg-slate-900/80 overflow-auto">
+                        <div id="code-editor" contenteditable="true"></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Panel 3: AI Assistant (Right) -->
-        <aside class="w-1/4 xl:w-1/5 bg-slate-800/30 p-4 flex flex-col border-l border-slate-700">
-            <h2 class="text-lg font-semibold text-white mb-4">AI Assistant</h2>
-            <div id="ai-log" class="flex-grow bg-slate-900/50 rounded-md p-3 overflow-y-auto text-xs space-y-3">
-                <!-- AI Log Messages will be appended here -->
-                <div class="p-2 rounded-md bg-slate-700/50">
-                    <p class="font-semibold text-sky-400">AI Ready</p>
-                    <p class="text-slate-400">Describe your project idea to get started.</p>
-                </div>
-            </div>
-            <div class="mt-4">
-                 <button class="w-full text-left bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-semibold py-2 px-3 rounded-md transition-colors text-sm">
-                    What's the next logical step?
-                </button>
-            </div>
+        <aside class="w-[30%] max-w-sm bg-slate-800/30 p-4 flex flex-col border-l border-slate-700">
+            <h2 class="text-lg font-semibold text-white mb-4">AI Assistant Log</h2>
+            <div id="ai-log" class="flex-grow bg-slate-900/50 rounded-md p-3 overflow-y-auto text-xs space-y-3"></div>
         </aside>
 
     </main>
 
 <script>
-    // --- State Management ---
-    const fileContents = {
-        'main.py': `# main.py - A simple calculator
-# Generated by Fugth AI
+const APP = {
+    config: {
+        HUGGING_FACE_URL: "https://fugthchat-fugth-founder-ai.hf.space",
+    },
+    state: {
+        isGenerating: false,
+        activeModel: '',
+        projectFiles: {},
+        activeFile: '',
+        workspaceType: 'software',
+    },
+    elements: {},
 
-def add(x, y):
-    """This function adds two numbers"""
-    return x + y
+    init() {
+        this.elements = {
+            modelList: document.getElementById('model-list'),
+            activeModelName: document.getElementById('active-model-name'),
+            aiStatusDot: document.getElementById('ai-status-dot'),
+            aiStatusText: document.getElementById('ai-status-text'),
+            generateBtn: document.getElementById('generate-btn'),
+            projectIdea: document.getElementById('project-idea'),
+            codeVerbosity: document.getElementById('code-verbosity'),
+            stylePalette: document.getElementById('style-palette'),
+            fileTree: document.getElementById('file-tree'),
+            codeEditor: document.getElementById('code-editor'),
+            currentFileName: document.getElementById('current-file-name'),
+            aiLog: document.getElementById('ai-log'),
+            refactorBtn: document.getElementById('refactor-btn'),
+        };
+        this.api.checkServerStatus();
+        this.addEventListeners();
+        this.ui.addLogMessage('Welcome', 'Describe your project idea and click Generate.', 'system');
+    },
 
-def subtract(x, y):
-    """This function subtracts two numbers"""
-    return x - y
-
-def multiply(x, y):
-    """This function multiplies two numbers"""
-    return x * y
-
-def divide(x, y):
-    """This function divides two numbers"""
-    if y == 0:
-        return "Error! Division by zero."
-    return x / y
-
-def main():
-    print("Select operation:")
-    print("1. Add")
-    print("2. Subtract")
-    print("3. Multiply")
-    print("4. Divide")
-
-    while True:
-        choice = input("Enter choice(1/2/3/4): ")
-
-        if choice in ('1', '2', '3', '4'):
-            try:
-                num1 = float(input("Enter first number: "))
-                num2 = float(input("Enter second number: "))
-            except ValueError:
-                print("Invalid input. Please enter numbers.")
-                continue
-
-            if choice == '1':
-                print(num1, "+", num2, "=", add(num1, num2))
-
-            elif choice == '2':
-                print(num1, "-", num2, "=", subtract(num1, num2))
-
-            elif choice == '3':
-                print(num1, "*", num2, "=", multiply(num1, num2))
-
-            elif choice == '4':
-                print(num1, "/", num2, "=", divide(num1, num2))
-            
-            next_calculation = input("Let's do next calculation? (yes/no): ")
-            if next_calculation.lower() != 'yes':
-                break
-        else:
-            print("Invalid Input")
-
-if __name__ == "__main__":
-    main()`,
-        'readme.md': `# Simple Calculator Project
-
-This project is a simple command-line calculator generated by **Fugth AI**.
-
-## Features
-
-- Addition
-- Subtraction
-- Multiplication
-- Division
-
-## How to Run
-
-\`\`\`bash
-python main.py
-\`\`\`
-`,
-        'requirements.txt': `# No external libraries required for this project.`
-    };
-
-    // --- UI Interaction Functions ---
-
-    function toggleDropdown(dropdownId) {
-        const dropdown = document.getElementById(dropdownId);
-        const menu = dropdown.querySelector('.absolute');
-        menu.classList.toggle('hidden');
-    }
-
-    function selectModel(element, modelName) {
-        document.getElementById('active-model-name').textContent = modelName;
-        toggleDropdown('model-selector-dropdown');
-        event.preventDefault();
-    }
-    
-    function switchWorkspace(workspace) {
-        const softwareTab = document.getElementById('tab-software');
-        const siteTab = document.getElementById('tab-site');
-        const ideaTextarea = document.getElementById('project-idea');
-
-        if (workspace === 'site') {
-            siteTab.classList.add('border-blue-500', 'text-white');
-            siteTab.classList.remove('border-transparent', 'text-slate-400');
-            softwareTab.classList.remove('border-blue-500', 'text-white');
-            softwareTab.classList.add('border-transparent', 'text-slate-400');
-            ideaTextarea.placeholder = "e.g., A portfolio website with a home, about, and contact page.";
-        } else { // software
-            softwareTab.classList.add('border-blue-500', 'text-white');
-            softwareTab.classList.remove('border-transparent', 'text-slate-400');
-            siteTab.classList.remove('border-blue-500', 'text-white');
-            siteTab.classList.add('border-transparent', 'text-slate-400');
-            ideaTextarea.placeholder = "e.g., A simple command-line calculator that can add, subtract, multiply, and divide.";
-        }
-    }
-
-    function updateVerbosityLabel(value) {
-        document.getElementById('verbosity-label').textContent = `${value} Lines`;
-    }
-
-    function selectFile(fileName, element) {
-        document.getElementById('current-file-name').textContent = fileName;
-        document.getElementById('code-editor').textContent = fileContents[fileName] || `// ${fileName} not found`;
+    addEventListeners() {
+        this.elements.generateBtn.onclick = () => this.logic.handleGenerateProject();
+        this.elements.refactorBtn.onclick = () => this.logic.handleRefactor();
         
-        // Update active file styling
-        document.querySelectorAll('#file-tree .file-name').forEach(el => {
-            el.parentElement.classList.add('text-slate-400');
-            el.parentElement.classList.remove('text-white');
+        window.addEventListener('click', (e) => {
+            const modelDropdown = document.getElementById('model-selector-container');
+            if (modelDropdown && !modelDropdown.contains(e.target)) {
+                modelDropdown.querySelector('.absolute').classList.add('hidden');
+            }
         });
-        element.classList.remove('text-slate-400');
-        element.classList.add('text-white');
-    }
 
-    // --- AI Simulation Functions ---
+        this.elements.codeEditor.addEventListener('input', () => {
+             if (this.state.activeFile && this.state.projectFiles[this.state.activeFile]) {
+                this.state.projectFiles[this.state.activeFile].content = this.elements.codeEditor.textContent;
+            }
+        });
+    },
 
-    const aiLogContainer = document.getElementById('ai-log');
-    const aiStatusDot = document.getElementById('ai-status-dot');
-    const aiStatusText = document.getElementById('ai-status-text');
+    ui: {
+        toggleDropdown(containerId) {
+            document.getElementById(containerId).querySelector('.absolute').classList.toggle('hidden');
+        },
+        selectModel(modelId, modelName) {
+            APP.state.activeModel = modelId;
+            APP.elements.activeModelName.textContent = modelName;
+            this.toggleDropdown('model-selector-container');
+        },
+        switchWorkspace(workspace, clickedTab) {
+            APP.state.workspaceType = workspace;
+            document.querySelectorAll('#tab-software, #tab-site').forEach(tab => {
+                tab.classList.remove('text-white', 'border-blue-500');
+                tab.style.borderColor = 'transparent';
+                tab.classList.add('text-slate-400');
+            });
+            clickedTab.classList.add('text-white');
+            clickedTab.style.borderColor = 'var(--accent-color)';
+            clickedTab.classList.remove('text-slate-400');
+            APP.elements.projectIdea.placeholder = workspace === 'site' 
+                ? "e.g., A portfolio website with a home, about, and contact page."
+                : "e.g., A simple command-line calculator.";
+        },
+        updateVerbosityLabel(value) {
+            document.getElementById('verbosity-label').textContent = `${value} Lines`;
+        },
+        selectFile(fileName) {
+            if (!APP.state.projectFiles[fileName]) return;
 
-    function addLogMessage(title, message, type = 'info') {
-        const color = type === 'info' ? 'sky' : 'emerald';
-        const logEntry = `
-            <div class="p-2 rounded-md bg-slate-700/50">
-                <p class="font-semibold text-${color}-400">${title}</p>
-                <p class="text-slate-400">${message}</p>
-            </div>
-        `;
-        aiLogContainer.innerHTML += logEntry;
-        aiLogContainer.scrollTop = aiLogContainer.scrollHeight; // Auto-scroll
-    }
+            APP.state.activeFile = fileName;
+            APP.elements.currentFileName.textContent = fileName;
 
-    function updateAIStatus(status, text) {
-        aiStatusDot.classList.remove('bg-green-500', 'pulse-bg-animation', 'bg-yellow-500');
-        if (status === 'thinking') {
-            aiStatusDot.classList.add('pulse-bg-animation', 'bg-yellow-500');
-        } else {
-            aiStatusDot.classList.add('bg-green-500');
-        }
-        aiStatusText.textContent = text;
-    }
+            const file = APP.state.projectFiles[fileName];
+            
+            if (fileName.endsWith('.md')) {
+                APP.elements.codeEditor.innerHTML = marked.parse(file.content);
+                APP.elements.codeEditor.setAttribute('contenteditable', 'false');
+            } else {
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                code.className = `language-${file.language || 'plaintext'}`;
+                code.textContent = file.content;
+                pre.appendChild(code);
+                APP.elements.codeEditor.innerHTML = '';
+                APP.elements.codeEditor.appendChild(pre);
+                APP.elements.codeEditor.setAttribute('contenteditable', 'true');
+                hljs.highlightElement(code);
+            }
+            
+            document.querySelectorAll('#file-tree .file-item').forEach(item => {
+                item.classList.toggle('bg-slate-700', item.dataset.filename === fileName);
+            });
+            APP.elements.refactorBtn.disabled = false;
+        },
+        addLogMessage(title, message, type = 'info') {
+            const colorMap = { info: 'sky', success: 'emerald', system: 'indigo', error: 'red' };
+            const color = colorMap[type] || 'sky';
+            const logEntry = document.createElement('div');
+            logEntry.className = 'p-2 rounded-md bg-slate-700/50';
+            logEntry.innerHTML = `<p class="font-semibold text-${color}-400">${title}</p><p class="text-slate-400 text-xs">${message}</p>`;
+            APP.elements.aiLog.appendChild(logEntry);
+            APP.elements.aiLog.scrollTop = APP.elements.aiLog.scrollHeight;
+        },
+        updateAIStatus(status, text) {
+            this.elements.aiStatusDot.className = 'w-3 h-3 rounded-full transition-colors';
+            switch (status) {
+                case 'thinking': this.elements.aiStatusDot.classList.add('pulse-bg-animation', 'bg-yellow-500'); break;
+                case 'error': this.elements.aiStatusDot.classList.add('bg-red-500'); break;
+                default: this.elements.aiStatusDot.classList.add('bg-green-500'); break;
+            }
+            this.elements.aiStatusText.textContent = text;
+        },
+    },
 
-    function generateProject() {
-        aiLogContainer.innerHTML = ''; // Clear previous logs
-        updateAIStatus('thinking', 'AI is thinking...');
-
-        const steps = [
-            { delay: 500, title: "Analyzing Project Idea", message: "Parsing natural language prompt..." },
-            { delay: 1200, title: "Scaffolding Project", message: "Creating file structure: /simple_calculator" },
-            { delay: 2000, title: "Generating main.py", message: "Writing core application logic and functions..." },
-            { delay: 2800, title: "Generating README.md", message: "Creating documentation for the project..." },
-            { delay: 3200, title: "Generating requirements.txt", message: "Analyzing dependencies..." },
-            { delay: 4000, title: "Task Complete", message: "Project generated successfully.", type: 'success' }
-        ];
-
-        let cumulativeDelay = 0;
-        steps.forEach(step => {
-            cumulativeDelay += step.delay;
-            setTimeout(() => {
-                addLogMessage(step.title, step.message, step.type);
-                if (step.title === "Task Complete") {
-                    updateAIStatus('ready', 'AI Ready');
+    api: {
+        async checkServerStatus() {
+            try {
+                const response = await fetch(APP.config.HUGGING_FACE_URL);
+                if (!response.ok) throw new Error(`Server offline (${response.status})`);
+                const data = await response.json();
+                
+                APP.ui.updateAIStatus('ready', 'Ready');
+                APP.elements.generateBtn.disabled = false;
+                
+                APP.elements.modelList.innerHTML = '';
+                let firstModelSet = false;
+                for (const modelId in data.available_models) {
+                    const model = data.available_models[modelId];
+                    const modelElement = document.createElement('a');
+                    modelElement.href = '#';
+                    modelElement.className = 'block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700';
+                    modelElement.textContent = model.name;
+                    modelElement.onclick = (e) => { e.preventDefault(); APP.ui.selectModel(modelId, model.name); };
+                    APP.elements.modelList.appendChild(modelElement);
+                    if (!firstModelSet) {
+                        APP.ui.selectModel(modelId, model.name);
+                        firstModelSet = true;
+                    }
                 }
-            }, cumulativeDelay);
-        });
+            } catch (error) {
+                APP.ui.updateAIStatus('error', 'Connection Failed');
+                console.error("Connection error:", error);
+                setTimeout(() => this.checkServerStatus(), 5000);
+            }
+        },
+        async streamAIResponse(prompt, onChunk, onComplete, onError) {
+            APP.ui.updateAIStatus('thinking', 'Thinking...');
+            APP.state.isGenerating = true;
+            APP.elements.generateBtn.disabled = true;
+            APP.elements.refactorBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${APP.config.HUGGING_FACE_URL}/chat_stream`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, model_id: APP.state.activeModel }),
+                });
+                if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    onChunk(decoder.decode(value, { stream: true }));
+                }
+                onComplete();
+            } catch (error) {
+                onError(error);
+            } finally {
+                APP.ui.updateAIStatus('ready', 'Ready');
+                APP.state.isGenerating = false;
+                APP.elements.generateBtn.disabled = false;
+                APP.elements.refactorBtn.disabled = !APP.state.activeFile;
+            }
+        },
+    },
+
+    logic: {
+        handleGenerateProject() {
+            const idea = APP.elements.projectIdea.value;
+            if (!idea.trim() || APP.state.isGenerating) return;
+
+            APP.elements.aiLog.innerHTML = '';
+            APP.ui.addLogMessage("Task Started", "Analyzing project requirements...");
+
+            const prompt = `
+                You are FugthAI, an expert software architect.
+                Based on the following idea, generate a complete project structure with filenames and their full code content.
+                
+                **Project Idea:** "${idea}"
+                **Approximate Lines of Code:** ${APP.elements.codeVerbosity.value}
+                **Coding Style:** ${APP.elements.stylePalette.value}
+                **Workspace Type:** ${APP.state.workspaceType}
+                
+                **Instructions:**
+                1. Create a logical file structure for the project.
+                2. For each file, provide its name and the complete, raw code content.
+                3. Use "<<<FILE_SEPARATOR>>>" to separate each file's information.
+                4. Format each file's data as: \`filename.ext\n[code content]\`
+                5. Do NOT include any other text, explanations, or markdown formatting outside this structure.`;
+            
+            let fullResponse = '';
+            APP.api.streamAIResponse(
+                prompt,
+                (chunk) => { fullResponse += chunk; },
+                () => { this.parseAndRenderProject(fullResponse); },
+                (error) => { APP.ui.addLogMessage("Error", `Generation failed: ${error.message}`, "error"); }
+            );
+        },
+        parseAndRenderProject(response) {
+            APP.state.projectFiles = {};
+            APP.elements.fileTree.innerHTML = '';
+            
+            const files = response.split('<<<FILE_SEPARATOR>>>');
+            
+            files.forEach(fileData => {
+                const trimmedData = fileData.trim();
+                const firstNewlineIndex = trimmedData.indexOf('\n');
+                if (!trimmedData || firstNewlineIndex === -1) return;
+
+                const fileName = trimmedData.substring(0, firstNewlineIndex).trim();
+                let content = trimmedData.substring(firstNewlineIndex + 1);
+                
+                const lang = fileName.split('.').pop();
+                const langMap = { py: 'python', md: 'markdown', js: 'javascript', html: 'html', css: 'css', txt: 'plaintext' };
+                
+                APP.state.projectFiles[fileName] = { content, language: langMap[lang] || 'plaintext' };
+
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="file-item flex items-center gap-2 cursor-pointer p-1 rounded-md hover:bg-slate-700" data-filename="${fileName}">
+                    <svg class="w-4 h-4 text-sky-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span class="file-name truncate">${fileName}</span></span>`;
+                li.querySelector('.file-item').onclick = () => APP.ui.selectFile(fileName);
+                APP.elements.fileTree.appendChild(li);
+            });
+
+            const firstFile = Object.keys(APP.state.projectFiles)[0];
+            if (firstFile) {
+                APP.ui.selectFile(firstFile);
+                APP.ui.addLogMessage("Success", "Project generated successfully.", "success");
+            } else {
+                 APP.ui.addLogMessage("Error", "The AI did not produce a valid project structure.", "error");
+            }
+        },
+        handleRefactor() {
+             const content = APP.elements.codeEditor.textContent;
+             if (!content.trim() || !APP.state.activeFile || APP.state.isGenerating) return;
+             
+             APP.ui.addLogMessage("Refactoring", `Asking AI to improve ${APP.state.activeFile}...`);
+             
+             const prompt = `
+                You are an expert code refactoring assistant.
+                Refactor the following code from the file named "${APP.state.activeFile}".
+                Improve its readability, efficiency, and adherence to best practices without changing its core functionality.
+                Return ONLY the complete, raw, refactored code.
+
+                **Original Code:**
+                \`\`\`${APP.state.projectFiles[APP.state.activeFile].language}
+                ${content}
+                \`\`\`
+             `;
+             
+             let fullResponse = '';
+             APP.api.streamAIResponse(
+                prompt,
+                (chunk) => { 
+                    fullResponse += chunk;
+                    APP.elements.codeEditor.querySelector('code').textContent = fullResponse;
+                },
+                () => {
+                     APP.state.projectFiles[APP.state.activeFile].content = fullResponse;
+                     hljs.highlightElement(APP.elements.codeEditor.querySelector('code'));
+                     APP.ui.addLogMessage("Success", `${APP.state.activeFile} has been refactored.`, "success");
+                },
+                (error) => {
+                     APP.ui.addLogMessage("Error", `Refactor failed: ${error.message}`, "error");
+                     APP.elements.codeEditor.querySelector('code').textContent = content; // Restore on error
+                }
+             );
+        },
     }
+};
 
-    // --- Initial Setup ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Set initial active file
-        selectFile('main.py', document.querySelector('#file-tree li:first-child span'));
-
-        // Close dropdowns if clicked outside
-        window.addEventListener('click', function(e) {
-            if (!document.getElementById('model-selector-dropdown').contains(e.target)) {
-                document.getElementById('model-selector-dropdown').querySelector('.absolute').classList.add('hidden');
-            }
-            if (!document.getElementById('download-dropdown').contains(e.target)) {
-                document.getElementById('download-dropdown').querySelector('.absolute').classList.add('hidden');
-            }
-        });
-    });
-
+document.addEventListener('DOMContentLoaded', () => APP.init());
 </script>
 
 </body>
