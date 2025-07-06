@@ -1,17 +1,25 @@
 const APP = {
+    // Configuration for the application
     config: {
-        // This URL points to your live Hugging Face Space backend.
         HUGGING_FACE_URL: "https://fugthchat-fugth-founder-ai.hf.space",
     },
+
+    // Holds the dynamic state of the application
     state: {
         isGenerating: false,
-        activeModel: '',
+        activeModel: 'deepseek',
         projectFiles: {},
         activeFile: '',
         workspaceType: 'software',
     },
+
+    // A cache for frequently used DOM elements
     elements: {},
 
+    /**
+     * Initializes the application.
+     * This function is the entry point.
+     */
     init() {
         this.cacheElements();
         this.addEventListeners();
@@ -19,45 +27,40 @@ const APP = {
         this.ui.addLogMessage('Welcome', 'Describe your project idea and click Generate.', 'system');
     },
 
+    /**
+     * Caches all necessary DOM elements for quick access.
+     */
     cacheElements() {
-        this.elements = {
-            modelList: document.getElementById('model-list'),
-            activeModelName: document.getElementById('active-model-name'),
-            aiStatusDot: document.getElementById('ai-status-dot'),
-            aiStatusText: document.getElementById('ai-status-text'),
-            generateBtn: document.getElementById('generate-btn'),
-            projectIdea: document.getElementById('project-idea'),
-            codeVerbosity: document.getElementById('code-verbosity'),
-            verbosityLabel: document.getElementById('verbosity-label'),
-            stylePalette: document.getElementById('style-palette'),
-            fileTree: document.getElementById('file-tree'),
-            codeEditor: document.getElementById('code-editor'),
-            currentFileName: document.getElementById('current-file-name'),
-            aiLog: document.getElementById('ai-log'),
-            refactorBtn: document.getElementById('refactor-btn'),
-            testGenBtn: document.getElementById('test-gen-btn'),
-            downloadBtn: document.getElementById('download-button'),
-            downloadZipBtn: document.getElementById('download-zip-button'),
-            modelSelectorBtn: document.getElementById('model-selector-button'),
-            tabs: document.querySelectorAll('.tab-button'),
-        };
+        const ids = [
+            'modelList', 'activeModelName', 'aiStatusDot', 'aiStatusText', 'generateBtn', 
+            'projectIdea', 'codeVerbosity', 'verbosityLabel', 'stylePalette', 'fileTree', 
+            'codeEditor', 'currentFileName', 'aiLog', 'refactorBtn', 'testGenBtn', 
+            'downloadButton', 'downloadZipButton', 'modelSelectorButton'
+        ];
+        ids.forEach(id => {
+            if (document.getElementById(id)) {
+                this.elements[id] = document.getElementById(id);
+            }
+        });
+        this.elements.tabs = document.querySelectorAll('.tab-button');
     },
 
+    /**
+     * Attaches all event listeners to the DOM elements.
+     */
     addEventListeners() {
         this.elements.generateBtn.onclick = () => this.logic.handleGenerateProject();
         this.elements.refactorBtn.onclick = () => this.logic.handleRefactorCode();
         this.elements.testGenBtn.onclick = () => this.logic.handleGenerateTests();
-        this.elements.downloadBtn.onclick = () => this.ui.toggleDropdown('download-container');
-        this.elements.downloadZipBtn.onclick = (e) => {
-            e.preventDefault();
-            this.logic.downloadZip();
-        };
-        this.elements.modelSelectorBtn.onclick = () => this.ui.toggleDropdown('model-selector-container');
+        this.elements.downloadButton.onclick = () => this.ui.toggleDropdown('download-container');
+        this.elements.downloadZipButton.onclick = (e) => { e.preventDefault(); this.logic.downloadZip(); };
+        this.elements.modelSelectorButton.onclick = () => this.ui.toggleDropdown('model-selector-container');
         this.elements.codeVerbosity.oninput = (e) => this.ui.updateVerbosityLabel(e.target.value);
         this.elements.tabs.forEach(tab => {
             tab.onclick = () => this.ui.switchWorkspace(tab.id === 'tab-site' ? 'site' : 'software', tab);
         });
 
+        // Save file content on user edit
         this.elements.codeEditor.addEventListener('input', () => {
              if (this.state.activeFile && this.state.projectFiles[this.state.activeFile]) {
                 this.state.projectFiles[this.state.activeFile].content = this.elements.codeEditor.textContent;
@@ -65,7 +68,7 @@ const APP = {
         });
     },
 
-    // --- UI Subsystem ---
+    // --- UI Subsystem: Handles all DOM manipulation ---
     ui: {
         toggleDropdown(containerId) {
             document.getElementById(containerId).querySelector('.absolute').classList.toggle('hidden');
@@ -73,12 +76,12 @@ const APP = {
         selectModel(modelId, modelName) {
             APP.state.activeModel = modelId;
             APP.elements.activeModelName.textContent = modelName;
-            this.toggleDropdown('model-selector-container');
+            APP.ui.toggleDropdown('model-selector-container');
         },
         switchWorkspace(workspace, clickedTab) {
             APP.state.workspaceType = workspace;
             APP.elements.tabs.forEach(tab => {
-                tab.classList.remove('text-white', 'border-blue-500');
+                tab.classList.remove('text-white');
                 tab.style.borderColor = 'transparent';
                 tab.classList.add('text-slate-400');
             });
@@ -129,17 +132,17 @@ const APP = {
             APP.elements.aiLog.scrollTop = APP.elements.aiLog.scrollHeight;
         },
         updateAIStatus(status, text) {
-            this.elements.aiStatusDot.className = 'w-3 h-3 rounded-full transition-colors';
+            APP.elements.aiStatusDot.className = 'w-3 h-3 rounded-full transition-colors';
             switch (status) {
-                case 'thinking': this.elements.aiStatusDot.classList.add('pulse-bg-animation', 'bg-yellow-500'); break;
-                case 'error': this.elements.aiStatusDot.classList.add('bg-red-500'); break;
-                default: this.elements.aiStatusDot.classList.add('bg-green-500'); break;
+                case 'thinking': APP.elements.aiStatusDot.classList.add('pulse-bg-animation', 'bg-yellow-500'); break;
+                case 'error': APP.elements.aiStatusDot.classList.add('bg-red-500'); break;
+                default: APP.elements.aiStatusDot.classList.add('bg-green-500'); break;
             }
-            this.elements.aiStatusText.textContent = text;
+            APP.elements.aiStatusText.textContent = text;
         },
     },
 
-    // --- API Subsystem ---
+    // --- API Subsystem: Handles communication with the backend ---
     api: {
         async checkServerStatus() {
             try {
@@ -168,7 +171,7 @@ const APP = {
             } catch (error) {
                 APP.ui.updateAIStatus('error', 'Connection Failed');
                 console.error("Connection error:", error);
-                setTimeout(() => this.checkServerStatus(), 5000);
+                setTimeout(() => APP.api.checkServerStatus(), 5000);
             }
         },
         async streamAIResponse(prompt, onChunk, onComplete, onError) {
@@ -206,74 +209,45 @@ const APP = {
         },
     },
 
-    // --- Logic Subsystem ---
+    // --- Logic Subsystem: Handles the core application functionality ---
     logic: {
         createPrompt(task, context = {}) {
             const base = `You are FugthAI, an expert software architect.`;
-            const projectContext = `
-                **Project Idea:** "${APP.elements.projectIdea.value}"
-                **Approximate Lines of Code:** ${APP.elements.codeVerbosity.value}
-                **Coding Style:** ${APP.elements.stylePalette.value}
-                **Workspace Type:** ${APP.state.workspaceType}
-            `;
-            const fileContext = `
-                **File Name:** "${APP.state.activeFile}"
-                **File Content:**
-                \`\`\`${APP.state.projectFiles[APP.state.activeFile]?.language}
-                ${context.code}
-                \`\`\`
-            `;
+            const projectContext = `**Project Idea:** "${APP.elements.projectIdea.value}"\n**Approximate Lines:** ${APP.elements.codeVerbosity.value}\n**Coding Style:** ${APP.elements.stylePalette.value}\n**Workspace Type:** ${APP.state.workspaceType}`;
+            const fileContext = `**File Name:** "${APP.state.activeFile}"\n**File Content:**\n\`\`\`${APP.state.projectFiles[APP.state.activeFile]?.language}\n${context.code}\n\`\`\``;
 
             const tasks = {
-                generate: {
-                    instruction: `Based on the following idea, generate a complete project structure with filenames and their full code content.
-                        **Instructions:**
-                        1. Create a logical file structure.
-                        2. For each file, provide its name and the complete, raw code content.
-                        3. Use "<<<FILE_SEPARATOR>>>" to separate each file's information.
-                        4. Format each file's data as: \`filename.ext\n[code content]\`
-                        5. Do NOT include any other text or explanations outside this structure.`,
-                    context: projectContext
-                },
-                refactor: {
-                    instruction: `Refactor the following code. Improve its readability, efficiency, and adherence to best practices without changing its core functionality. Return ONLY the complete, raw, refactored code.`,
-                    context: fileContext
-                },
-                generate_tests: {
-                    instruction: `Generate a new test file with comprehensive unit tests for the following Python code. The test file should be named "test_${APP.state.activeFile}". Use the pytest framework. Return the filename and code content using the specified format: \`test_filename.py\n[test code content]\``,
-                    context: fileContext
-                }
+                generate: { instruction: `Based on the following idea, generate a complete project structure with filenames and full code content.\n**Instructions:**\n1. Create a logical file structure.\n2. For each file, provide its name and the complete, raw code content.\n3. Use "<<<FILE_SEPARATOR>>>" to separate each file's information.\n4. Format each file's data as: \`filename.ext\n[code content]\`\n5. Do NOT include any other text or explanations.`, context: projectContext },
+                refactor: { instruction: `Refactor the following code. Improve its readability, efficiency, and adherence to best practices without changing its core functionality. Return ONLY the complete, raw, refactored code.`, context: fileContext },
+                generate_tests: { instruction: `Generate a new test file with comprehensive unit tests for the following Python code. The test file should be named "test_${APP.state.activeFile}". Use the pytest framework. Return the filename and code content using the format: \`test_filename.py\n[test code content]\``, context: fileContext }
             };
-            
             return `${base}\n${tasks[task].instruction}\n${tasks[task].context}`;
         },
-
         handleGenerateProject() {
             if (!APP.elements.projectIdea.value.trim() || APP.state.isGenerating) return;
-            APP.elements.aiLog.innerHTML = '';
             APP.ui.addLogMessage("Task Started", "Analyzing project requirements...", "info");
-            const prompt = this.createPrompt('generate');
+            const prompt = APP.logic.createPrompt('generate');
             let fullResponse = '';
             APP.api.streamAIResponse(
                 prompt,
                 (chunk) => { fullResponse += chunk; },
-                () => { this.parseAndRenderProject(fullResponse); },
+                () => { APP.logic.parseAndRenderProject(fullResponse); },
                 (error) => { APP.ui.addLogMessage("Error", `Generation failed: ${error.message}`, "error"); }
             );
         },
         parseAndRenderProject(response) {
-            APP.state.projectFiles = {};
-            APP.elements.fileTree.innerHTML = '';
-            
+            const fileTree = APP.elements.fileTree;
+            fileTree.innerHTML = '';
             const files = response.split('<<<FILE_SEPARATOR>>>');
+            let firstFile = null;
+
             files.forEach(fileData => {
                 const trimmedData = fileData.trim();
                 const firstNewlineIndex = trimmedData.indexOf('\n');
                 if (!trimmedData || firstNewlineIndex === -1) return;
 
                 const fileName = trimmedData.substring(0, firstNewlineIndex).trim();
-                let content = trimmedData.substring(firstNewlineIndex + 1);
-                
+                const content = trimmedData.substring(firstNewlineIndex + 1);
                 const lang = fileName.split('.').pop();
                 const langMap = { py: 'python', md: 'markdown', js: 'javascript', html: 'html', css: 'css', txt: 'plaintext' };
                 
@@ -284,10 +258,10 @@ const APP = {
                     <svg class="w-4 h-4 text-sky-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span class="file-name truncate">${fileName}</span></span>`;
                 li.querySelector('.file-item').onclick = () => APP.ui.selectFile(fileName);
-                APP.elements.fileTree.appendChild(li);
+                fileTree.appendChild(li);
+                if (!firstFile) firstFile = fileName;
             });
 
-            const firstFile = Object.keys(APP.state.projectFiles)[0];
             if (firstFile) {
                 APP.ui.selectFile(firstFile);
                 APP.ui.addLogMessage("Success", "Project generated successfully.", "success");
@@ -299,7 +273,7 @@ const APP = {
              const code = APP.elements.codeEditor.textContent;
              if (!code.trim() || !APP.state.activeFile || APP.state.isGenerating) return;
              APP.ui.addLogMessage("Refactoring", `Asking AI to improve ${APP.state.activeFile}...`, "info");
-             const prompt = this.createPrompt('refactor', { code });
+             const prompt = APP.logic.createPrompt('refactor', { code });
              let fullResponse = '';
              APP.api.streamAIResponse(
                 prompt,
@@ -325,12 +299,12 @@ const APP = {
             const code = APP.elements.codeEditor.textContent;
             if (!code.trim() || !APP.state.activeFile || APP.state.isGenerating) return;
             APP.ui.addLogMessage("Generating Tests", `Creating pytest file for ${APP.state.activeFile}...`, "info");
-            const prompt = this.createPrompt('generate_tests', { code });
+            const prompt = APP.logic.createPrompt('generate_tests', { code });
             let fullResponse = '';
             APP.api.streamAIResponse(
                 prompt,
-                (chunk) => { fullResponse += chunk; },
-                () => { this.parseAndRenderProject(fullResponse); },
+                (chunk) => { fullResponse += chunk; }, 
+                () => { APP.logic.parseAndRenderProject(fullResponse); }, 
                 (error) => { APP.ui.addLogMessage("Error", `Test generation failed: ${error.message}`, "error"); }
             );
         },
