@@ -6,34 +6,7 @@
     <title>Fugth - AI Development Environment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
-    <style>
-        :root { --accent-color: #3b82f6; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        @keyframes pulse-bg {
-            0%, 100% { background-color: #f59e0b; }
-            50% { background-color: #fbbf24; }
-        }
-        .pulse-bg-animation { animation: pulse-bg 2s infinite; }
-        #code-editor-container { position: relative; height: 100%; }
-        #code-editor {
-            font-family: 'SF Mono', 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow: auto;
-            position: absolute;
-            top: 0; right: 0; bottom: 0; left: 0;
-            background-color: #0f172a;
-            color: #cbd5e1;
-            padding: 1rem;
-            line-height: 1.5;
-        }
-        .hljs { background: transparent !important; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans antialiased flex flex-col h-screen overflow-hidden">
 
@@ -41,7 +14,7 @@
         <div class="flex items-center gap-4">
             <h1 class="text-xl font-bold text-white">🚀 Fugth</h1>
             <div class="relative" id="model-selector-container">
-                <button onclick="APP.ui.toggleDropdown('model-selector-container')" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md text-sm transition-colors">
+                <button id="model-selector-button" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md text-sm transition-colors">
                     <span id="active-model-name">Loading...</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
@@ -53,6 +26,15 @@
                 <div id="ai-status-dot" class="w-3 h-3 bg-red-500 rounded-full transition-colors"></div>
                 <span id="ai-status-text">Connecting</span>
             </div>
+            <div class="relative" id="download-container">
+                <button id="download-button" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    <span>Export</span>
+                </button>
+                <div id="download-list" class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden">
+                    <a id="download-zip-button" href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">📦 Download as .zip</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -61,8 +43,8 @@
             <h2 class="text-lg font-semibold text-white mb-4">Configuration</h2>
             <div class="mb-6">
                 <div class="flex border-b border-slate-600">
-                    <button id="tab-software" onclick="APP.ui.switchWorkspace('software', this)" class="px-4 py-2 -mb-px text-sm font-semibold border-b-2 text-white focus:outline-none" style="border-color: var(--accent-color);">💻 Software</button>
-                    <button id="tab-site" onclick="APP.ui.switchWorkspace('site', this)" class="px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none">🌐 Website</button>
+                    <button id="tab-software" class="tab-button px-4 py-2 -mb-px text-sm font-semibold border-b-2 text-white" style="border-color: var(--accent-color);">💻 Software</button>
+                    <button id="tab-site" class="tab-button px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white">🌐 Website</button>
                 </div>
             </div>
             <div class="flex-grow flex flex-col space-y-6">
@@ -72,7 +54,7 @@
                 </div>
                 <div>
                     <label for="code-verbosity" class="text-sm font-medium mb-2 block">Code Verbosity</label>
-                    <input id="code-verbosity" type="range" min="50" max="4000" value="200" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer" oninput="APP.ui.updateVerbosityLabel(this.value)">
+                    <input id="code-verbosity" type="range" min="50" max="4000" value="200" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
                     <div class="text-xs text-slate-400 mt-1 flex justify-between">
                         <span>Basic</span>
                         <span id="verbosity-label" class="font-semibold text-sky-400">200 Lines</span>
@@ -108,9 +90,10 @@
                 <div class="flex-grow flex flex-col">
                     <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
                         <span id="current-file-name" class="text-sm font-medium text-white">No File Selected</span>
-                        <button id="refactor-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>
-                            ✨ Refactor
-                        </button>
+                        <div class="flex items-center gap-4">
+                            <button id="refactor-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>✨ Refactor</button>
+                            <button id="test-gen-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>🧪 Generate Tests</button>
+                        </div>
                     </div>
                     <div id="code-editor-container" class="flex-grow bg-slate-900/80 overflow-auto">
                         <div id="code-editor" contenteditable="true"></div>
@@ -126,305 +109,9 @@
 
     </main>
 
-<script>
-const APP = {
-    config: {
-        HUGGING_FACE_URL: "https://fugthchat-fugth-founder-ai.hf.space",
-    },
-    state: {
-        isGenerating: false,
-        activeModel: '',
-        projectFiles: {},
-        activeFile: '',
-        workspaceType: 'software',
-    },
-    elements: {},
-
-    init() {
-        this.elements = {
-            modelList: document.getElementById('model-list'),
-            activeModelName: document.getElementById('active-model-name'),
-            aiStatusDot: document.getElementById('ai-status-dot'),
-            aiStatusText: document.getElementById('ai-status-text'),
-            generateBtn: document.getElementById('generate-btn'),
-            projectIdea: document.getElementById('project-idea'),
-            codeVerbosity: document.getElementById('code-verbosity'),
-            stylePalette: document.getElementById('style-palette'),
-            fileTree: document.getElementById('file-tree'),
-            codeEditor: document.getElementById('code-editor'),
-            currentFileName: document.getElementById('current-file-name'),
-            aiLog: document.getElementById('ai-log'),
-            refactorBtn: document.getElementById('refactor-btn'),
-        };
-        this.api.checkServerStatus();
-        this.addEventListeners();
-        this.ui.addLogMessage('Welcome', 'Describe your project idea and click Generate.', 'system');
-    },
-
-    addEventListeners() {
-        this.elements.generateBtn.onclick = () => this.logic.handleGenerateProject();
-        this.elements.refactorBtn.onclick = () => this.logic.handleRefactor();
-        
-        window.addEventListener('click', (e) => {
-            const modelDropdown = document.getElementById('model-selector-container');
-            if (modelDropdown && !modelDropdown.contains(e.target)) {
-                modelDropdown.querySelector('.absolute').classList.add('hidden');
-            }
-        });
-
-        this.elements.codeEditor.addEventListener('input', () => {
-             if (this.state.activeFile && this.state.projectFiles[this.state.activeFile]) {
-                this.state.projectFiles[this.state.activeFile].content = this.elements.codeEditor.textContent;
-            }
-        });
-    },
-
-    ui: {
-        toggleDropdown(containerId) {
-            document.getElementById(containerId).querySelector('.absolute').classList.toggle('hidden');
-        },
-        selectModel(modelId, modelName) {
-            APP.state.activeModel = modelId;
-            APP.elements.activeModelName.textContent = modelName;
-            this.toggleDropdown('model-selector-container');
-        },
-        switchWorkspace(workspace, clickedTab) {
-            APP.state.workspaceType = workspace;
-            document.querySelectorAll('#tab-software, #tab-site').forEach(tab => {
-                tab.classList.remove('text-white', 'border-blue-500');
-                tab.style.borderColor = 'transparent';
-                tab.classList.add('text-slate-400');
-            });
-            clickedTab.classList.add('text-white');
-            clickedTab.style.borderColor = 'var(--accent-color)';
-            clickedTab.classList.remove('text-slate-400');
-            APP.elements.projectIdea.placeholder = workspace === 'site' 
-                ? "e.g., A portfolio website with a home, about, and contact page."
-                : "e.g., A simple command-line calculator.";
-        },
-        updateVerbosityLabel(value) {
-            document.getElementById('verbosity-label').textContent = `${value} Lines`;
-        },
-        selectFile(fileName) {
-            if (!APP.state.projectFiles[fileName]) return;
-
-            APP.state.activeFile = fileName;
-            APP.elements.currentFileName.textContent = fileName;
-
-            const file = APP.state.projectFiles[fileName];
-            
-            if (fileName.endsWith('.md')) {
-                APP.elements.codeEditor.innerHTML = marked.parse(file.content);
-                APP.elements.codeEditor.setAttribute('contenteditable', 'false');
-            } else {
-                const pre = document.createElement('pre');
-                const code = document.createElement('code');
-                code.className = `language-${file.language || 'plaintext'}`;
-                code.textContent = file.content;
-                pre.appendChild(code);
-                APP.elements.codeEditor.innerHTML = '';
-                APP.elements.codeEditor.appendChild(pre);
-                APP.elements.codeEditor.setAttribute('contenteditable', 'true');
-                hljs.highlightElement(code);
-            }
-            
-            document.querySelectorAll('#file-tree .file-item').forEach(item => {
-                item.classList.toggle('bg-slate-700', item.dataset.filename === fileName);
-            });
-            APP.elements.refactorBtn.disabled = false;
-        },
-        addLogMessage(title, message, type = 'info') {
-            const colorMap = { info: 'sky', success: 'emerald', system: 'indigo', error: 'red' };
-            const color = colorMap[type] || 'sky';
-            const logEntry = document.createElement('div');
-            logEntry.className = 'p-2 rounded-md bg-slate-700/50';
-            logEntry.innerHTML = `<p class="font-semibold text-${color}-400">${title}</p><p class="text-slate-400 text-xs">${message}</p>`;
-            APP.elements.aiLog.appendChild(logEntry);
-            APP.elements.aiLog.scrollTop = APP.elements.aiLog.scrollHeight;
-        },
-        updateAIStatus(status, text) {
-            this.elements.aiStatusDot.className = 'w-3 h-3 rounded-full transition-colors';
-            switch (status) {
-                case 'thinking': this.elements.aiStatusDot.classList.add('pulse-bg-animation', 'bg-yellow-500'); break;
-                case 'error': this.elements.aiStatusDot.classList.add('bg-red-500'); break;
-                default: this.elements.aiStatusDot.classList.add('bg-green-500'); break;
-            }
-            this.elements.aiStatusText.textContent = text;
-        },
-    },
-
-    api: {
-        async checkServerStatus() {
-            try {
-                const response = await fetch(APP.config.HUGGING_FACE_URL);
-                if (!response.ok) throw new Error(`Server offline (${response.status})`);
-                const data = await response.json();
-                
-                APP.ui.updateAIStatus('ready', 'Ready');
-                APP.elements.generateBtn.disabled = false;
-                
-                APP.elements.modelList.innerHTML = '';
-                let firstModelSet = false;
-                for (const modelId in data.available_models) {
-                    const model = data.available_models[modelId];
-                    const modelElement = document.createElement('a');
-                    modelElement.href = '#';
-                    modelElement.className = 'block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700';
-                    modelElement.textContent = model.name;
-                    modelElement.onclick = (e) => { e.preventDefault(); APP.ui.selectModel(modelId, model.name); };
-                    APP.elements.modelList.appendChild(modelElement);
-                    if (!firstModelSet) {
-                        APP.ui.selectModel(modelId, model.name);
-                        firstModelSet = true;
-                    }
-                }
-            } catch (error) {
-                APP.ui.updateAIStatus('error', 'Connection Failed');
-                console.error("Connection error:", error);
-                setTimeout(() => this.checkServerStatus(), 5000);
-            }
-        },
-        async streamAIResponse(prompt, onChunk, onComplete, onError) {
-            APP.ui.updateAIStatus('thinking', 'Thinking...');
-            APP.state.isGenerating = true;
-            APP.elements.generateBtn.disabled = true;
-            APP.elements.refactorBtn.disabled = true;
-
-            try {
-                const response = await fetch(`${APP.config.HUGGING_FACE_URL}/chat_stream`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, model_id: APP.state.activeModel }),
-                });
-                if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-                
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    onChunk(decoder.decode(value, { stream: true }));
-                }
-                onComplete();
-            } catch (error) {
-                onError(error);
-            } finally {
-                APP.ui.updateAIStatus('ready', 'Ready');
-                APP.state.isGenerating = false;
-                APP.elements.generateBtn.disabled = false;
-                APP.elements.refactorBtn.disabled = !APP.state.activeFile;
-            }
-        },
-    },
-
-    logic: {
-        handleGenerateProject() {
-            const idea = APP.elements.projectIdea.value;
-            if (!idea.trim() || APP.state.isGenerating) return;
-
-            APP.elements.aiLog.innerHTML = '';
-            APP.ui.addLogMessage("Task Started", "Analyzing project requirements...");
-
-            const prompt = `
-                You are FugthAI, an expert software architect.
-                Based on the following idea, generate a complete project structure with filenames and their full code content.
-                
-                **Project Idea:** "${idea}"
-                **Approximate Lines of Code:** ${APP.elements.codeVerbosity.value}
-                **Coding Style:** ${APP.elements.stylePalette.value}
-                **Workspace Type:** ${APP.state.workspaceType}
-                
-                **Instructions:**
-                1. Create a logical file structure for the project.
-                2. For each file, provide its name and the complete, raw code content.
-                3. Use "<<<FILE_SEPARATOR>>>" to separate each file's information.
-                4. Format each file's data as: \`filename.ext\n[code content]\`
-                5. Do NOT include any other text, explanations, or markdown formatting outside this structure.`;
-            
-            let fullResponse = '';
-            APP.api.streamAIResponse(
-                prompt,
-                (chunk) => { fullResponse += chunk; },
-                () => { this.parseAndRenderProject(fullResponse); },
-                (error) => { APP.ui.addLogMessage("Error", `Generation failed: ${error.message}`, "error"); }
-            );
-        },
-        parseAndRenderProject(response) {
-            APP.state.projectFiles = {};
-            APP.elements.fileTree.innerHTML = '';
-            
-            const files = response.split('<<<FILE_SEPARATOR>>>');
-            
-            files.forEach(fileData => {
-                const trimmedData = fileData.trim();
-                const firstNewlineIndex = trimmedData.indexOf('\n');
-                if (!trimmedData || firstNewlineIndex === -1) return;
-
-                const fileName = trimmedData.substring(0, firstNewlineIndex).trim();
-                let content = trimmedData.substring(firstNewlineIndex + 1);
-                
-                const lang = fileName.split('.').pop();
-                const langMap = { py: 'python', md: 'markdown', js: 'javascript', html: 'html', css: 'css', txt: 'plaintext' };
-                
-                APP.state.projectFiles[fileName] = { content, language: langMap[lang] || 'plaintext' };
-
-                const li = document.createElement('li');
-                li.innerHTML = `<span class="file-item flex items-center gap-2 cursor-pointer p-1 rounded-md hover:bg-slate-700" data-filename="${fileName}">
-                    <svg class="w-4 h-4 text-sky-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span class="file-name truncate">${fileName}</span></span>`;
-                li.querySelector('.file-item').onclick = () => APP.ui.selectFile(fileName);
-                APP.elements.fileTree.appendChild(li);
-            });
-
-            const firstFile = Object.keys(APP.state.projectFiles)[0];
-            if (firstFile) {
-                APP.ui.selectFile(firstFile);
-                APP.ui.addLogMessage("Success", "Project generated successfully.", "success");
-            } else {
-                 APP.ui.addLogMessage("Error", "The AI did not produce a valid project structure.", "error");
-            }
-        },
-        handleRefactor() {
-             const content = APP.elements.codeEditor.textContent;
-             if (!content.trim() || !APP.state.activeFile || APP.state.isGenerating) return;
-             
-             APP.ui.addLogMessage("Refactoring", `Asking AI to improve ${APP.state.activeFile}...`);
-             
-             const prompt = `
-                You are an expert code refactoring assistant.
-                Refactor the following code from the file named "${APP.state.activeFile}".
-                Improve its readability, efficiency, and adherence to best practices without changing its core functionality.
-                Return ONLY the complete, raw, refactored code.
-
-                **Original Code:**
-                \`\`\`${APP.state.projectFiles[APP.state.activeFile].language}
-                ${content}
-                \`\`\`
-             `;
-             
-             let fullResponse = '';
-             APP.api.streamAIResponse(
-                prompt,
-                (chunk) => { 
-                    fullResponse += chunk;
-                    APP.elements.codeEditor.querySelector('code').textContent = fullResponse;
-                },
-                () => {
-                     APP.state.projectFiles[APP.state.activeFile].content = fullResponse;
-                     hljs.highlightElement(APP.elements.codeEditor.querySelector('code'));
-                     APP.ui.addLogMessage("Success", `${APP.state.activeFile} has been refactored.`, "success");
-                },
-                (error) => {
-                     APP.ui.addLogMessage("Error", `Refactor failed: ${error.message}`, "error");
-                     APP.elements.codeEditor.querySelector('code').textContent = content; // Restore on error
-                }
-             );
-        },
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => APP.init());
-</script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
