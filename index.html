@@ -5,23 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fugth Founder AI</title>
     <style>
-        :root{--bg-color:#1a1b26;--panel-color:#24283b;--text-color:#c0caf5;--primary-color:#7aa2f7;--green:#9ece6a;--yellow:#e0af68;--red:#f7768e;--border-color:#414868}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;margin:0;background-color:var(--bg-color);color:var(--text-color);display:flex;flex-direction:column;height:100vh;overflow:hidden}.header-bar{background-color:var(--panel-color);padding:8px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:20px;flex-shrink:0}.header-bar h1{font-size:1.2em;margin:0;color:var(--primary-color)}.status-group{display:flex;align-items:center;gap:8px}#status-dot{width:12px;height:12px;border-radius:50%;background-color:var(--yellow)}.main-workspace{display:flex;flex-grow:1;overflow:hidden}.left-panel,.main-content{padding:20px;height:100%;box-sizing:border-box;overflow-y:auto}.left-panel{background-color:var(--panel-color);border-right:1px solid var(--border-color);width:350px;flex-shrink:0;display:flex;flex-direction:column}.main-content{flex-grow:1;display:flex;flex-direction:column;}.form-group{margin-bottom:16px}label{display:block;margin-bottom:6px;font-size:.9em;font-weight:700}input[type=text],textarea{width:100%;background-color:var(--bg-color);color:var(--text-color);border:1px solid var(--border-color);border-radius:4px;padding:8px;box-sizing:border-box}textarea{resize:vertical;min-height:150px;flex-grow:1}#generate-btn{width:100%;padding:12px;background-color:var(--primary-color);color:var(--bg-color);border:none;border-radius:5px;font-size:1.1em;font-weight:700;cursor:pointer;transition:background-color .2s}#generate-btn:disabled{background-color:var(--border-color);cursor:not-allowed}#code-editor{flex-grow:1;padding:15px;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;font-family:'Courier New',Courier,monospace;background-color:var(--panel-color);border-radius:5px;}
+        :root{--bg-color:#1a1b26;--panel-color:#24283b;--text-color:#c0caf5;--primary-color:#7aa2f7;--green:#9ece6a;--yellow:#e0af68;--red:#f7768e;--border-color:#414868}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;margin:0;background-color:var(--bg-color);color:var(--text-color);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+        .header-bar{background-color:var(--panel-color);padding:8px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:20px;flex-shrink:0}
+        .header-bar h1{font-size:1.2em;margin:0;color:var(--primary-color)}
+        .status-group{display:flex;align-items:center;gap:8px}
+        #status-dot{width:12px;height:12px;border-radius:50%}
+        main{display:flex;flex-grow:1;overflow:hidden}
+        .panel{padding:20px;height:100%;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column}
+        .left-panel{background-color:var(--panel-color);border-right:1px solid var(--border-color);width:40%;flex-shrink:0}
+        .right-panel{flex-grow:1;}
+        label{display:block;margin-bottom:6px;font-size:.9em;font-weight:700}
+        textarea{width:100%;background-color:var(--bg-color);color:var(--text-color);border:1px solid var(--border-color);border-radius:4px;padding:8px;box-sizing:border-box;resize:vertical;flex-grow:1;font-family:monospace;font-size:14px;}
+        button{width:100%;padding:12px;margin-top:16px;background-color:var(--primary-color);color:var(--bg-color);border:none;border-radius:5px;font-size:1.1em;font-weight:700;cursor:pointer;transition:background-color .2s}
+        button:disabled{background-color:var(--border-color);cursor:not-allowed}
+        pre{white-space:pre-wrap;word-wrap:break-word;background-color:var(--panel-color);padding:15px;border-radius:5px;flex-grow:1;overflow-y:auto;}
     </style>
 </head>
 <body>
     <div class="header-bar">
         <h1>🚀 Fugth Founder AI</h1>
-        <div class="status-group"><div id="status-dot" title="Connecting..."></div><span id="ai-status">Connecting...</span></div>
-    </div>
-    <main class="main-workspace">
-        <div class="left-panel">
-            <h3>Input & Configuration</h3>
-            <div class="form-group" style="display:flex;flex-direction:column;flex-grow:1"><label for="project-idea">Project Idea</label><textarea id="project-idea" placeholder="Describe your project... e.g., A command-line tool in Python that fetches the weather for a city."></textarea></div>
-            <div class="form-group"><label for="project-name">Project Name</label><input type="text" id="project-name" placeholder="weather-cli"></div>
-            <button id="generate-btn" disabled>Generate Project</button>
+        <div class="status-group">
+            <div id="status-dot"></div>
+            <span id="ai-status">Connecting...</span>
         </div>
-        <div class="main-content">
-            <pre id="code-editor">Your generated code will appear here...</pre>
+    </div>
+    <main>
+        <div class="panel left-panel">
+            <label for="prompt-input">Your Prompt:</label>
+            <textarea id="prompt-input" placeholder="Enter your prompt here... e.g., Create a python script that prints 'hello world'"></textarea>
+            <button id="generate-btn" disabled>Generate Code</button>
+        </div>
+        <div class="panel right-panel">
+            <label>Generated Code:</label>
+            <pre id="code-output">AI response will appear here...</pre>
         </div>
     </main>
 
@@ -30,82 +47,64 @@
         const statusDot = document.getElementById('status-dot');
         const aiStatus = document.getElementById('ai-status');
         const generateBtn = document.getElementById('generate-btn');
-        const codeEditor = document.getElementById('code-editor');
+        const promptInput = document.getElementById('prompt-input');
+        const codeOutput = document.getElementById('code-output');
 
-        // **THE FIX IS HERE**: Using the full URL for your Space
-        const API_URL = 'https://fugthchat-fugth-founder-ai.hf.space'; 
-        
         async function checkServerStatus() {
             try {
-                // We fetch the status from the root URL
-                const response = await fetch(API_URL + '/');
-                if (!response.ok) throw new Error(`Server offline or starting`);
-                
-                const data = await response.json();
-                aiStatus.textContent = data.message;
+                // Use a relative URL to check status
+                const response = await fetch('/');
+                if (!response.ok) throw new Error('Server offline');
 
-                // If the message says the model is ready, we stop checking.
-                if (data.message.includes("ready")) {
+                const data = await response.json();
+                if (data.model_loaded) {
+                    aiStatus.textContent = 'AI Model Ready';
                     statusDot.style.backgroundColor = 'var(--green)';
                     generateBtn.disabled = false;
-                    console.log("Backend is ready. Stopping status checks.");
                 } else {
-                    // If not ready, wait 5 seconds and try again.
+                    aiStatus.textContent = 'Model is loading...';
                     statusDot.style.backgroundColor = 'var(--yellow)';
-                    console.log("Backend is online, but model is loading. Checking again in 5s...");
-                    setTimeout(checkServerStatus, 5000);
+                    setTimeout(checkServerStatus, 5000); // Check again if model isn't loaded
                 }
             } catch (error) {
-                // If the server isn't responding at all, wait and try again.
-                aiStatus.textContent = "Connection Failed. Retrying...";
+                aiStatus.textContent = 'Connection Failed. Retrying...';
                 statusDot.style.backgroundColor = 'var(--red)';
-                console.log("Connection failed. Retrying in 5s...");
-                setTimeout(checkServerStatus, 5000);
+                setTimeout(checkServerStatus, 5000); // Retry connection on failure
             }
         }
-        
+
         async function generateCode() {
             generateBtn.disabled = true;
-            codeEditor.textContent = 'AI is thinking...';
-            
-            const projectIdea = document.getElementById('project-idea').value;
-            const projectName = document.getElementById('project-name').value;
-
-            if (!projectIdea || !projectName) {
-                alert("Please provide both a Project Idea and a Project Name.");
-                generateBtn.disabled = false;
-                return;
-            }
-
-            const finalPrompt = `<|user|>\nGenerate a complete, functional software project based on the following idea:\n\nIdea: ${projectIdea}\nProject Name: ${projectName}\n\nProvide the full code for all necessary files.\n<|assistant|>\n`;
+            aiStatus.textContent = 'AI is thinking...';
+            codeOutput.textContent = '';
 
             try {
-                // We use the full URL to call the /generate endpoint
-                const response = await fetch(`${API_URL}/generate`, {
+                // Use a relative URL to send the prompt to the /chat endpoint
+                const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: finalPrompt })
+                    body: JSON.stringify({ prompt: promptInput.value })
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || `Request failed with status ${response.status}`);
+                    throw new Error(errorData.response || 'Request failed');
                 }
                 
                 const data = await response.json();
-                codeEditor.textContent = data.response;
+                codeOutput.textContent = data.response;
+                aiStatus.textContent = 'AI Model Ready';
 
             } catch (error) {
-                codeEditor.textContent = `An error occurred: ${error.message}`;
+                codeOutput.textContent = `An error occurred: ${error.message}`;
+                aiStatus.textContent = 'Error!';
             } finally {
                 generateBtn.disabled = false;
             }
         }
 
         generateBtn.addEventListener('click', generateCode);
-
-        // Start the first status check when the page loads.
-        checkServerStatus();
+        checkServerStatus(); // Start checking the server status when the page loads
     });
     </script>
 </body>
