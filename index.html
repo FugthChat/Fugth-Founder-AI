@@ -1,117 +1,112 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fugth - AI Development Environment</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <link rel="stylesheet" href="style.css">
+    <title>Fugth Founder AI</title>
+    <style>
+        :root{--bg-color:#1a1b26;--panel-color:#24283b;--text-color:#c0caf5;--primary-color:#7aa2f7;--green:#9ece6a;--yellow:#e0af68;--red:#f7768e;--border-color:#414868}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;margin:0;background-color:var(--bg-color);color:var(--text-color);display:flex;flex-direction:column;height:100vh;overflow:hidden}.header-bar{background-color:var(--panel-color);padding:8px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:20px;flex-shrink:0}.header-bar h1{font-size:1.2em;margin:0;color:var(--primary-color)}.status-group{display:flex;align-items:center;gap:8px}#status-dot{width:12px;height:12px;border-radius:50%;background-color:var(--yellow)}.main-workspace{display:flex;flex-grow:1;overflow:hidden}.left-panel,.main-content{padding:20px;height:100%;box-sizing:border-box;overflow-y:auto}.left-panel{background-color:var(--panel-color);border-right:1px solid var(--border-color);width:350px;flex-shrink:0;display:flex;flex-direction:column}.main-content{flex-grow:1;display:flex;flex-direction:column;}.form-group{margin-bottom:16px}label{display:block;margin-bottom:6px;font-size:.9em;font-weight:700}input[type=text],textarea{width:100%;background-color:var(--bg-color);color:var(--text-color);border:1px solid var(--border-color);border-radius:4px;padding:8px;box-sizing:border-box}textarea{resize:vertical;min-height:150px;flex-grow:1}#generate-btn{width:100%;padding:12px;background-color:var(--primary-color);color:var(--bg-color);border:none;border-radius:5px;font-size:1.1em;font-weight:700;cursor:pointer;transition:background-color .2s}#generate-btn:disabled{background-color:var(--border-color);cursor:not-allowed}#code-editor{flex-grow:1;padding:15px;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;font-family:'Courier New',Courier,monospace;background-color:var(--panel-color);border-radius:5px;}
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans antialiased flex flex-col h-screen overflow-hidden">
-
-    <header class="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 px-4 py-2 flex items-center justify-between flex-shrink-0 z-20">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-bold text-white">🚀 Fugth</h1>
-            <div class="relative" id="model-selector-container">
-                <button id="model-selector-button" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-md text-sm transition-colors">
-                    <span id="active-model-name">Loading...</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div id="model-list" class="absolute mt-2 w-64 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden"></div>
-            </div>
+<body>
+    <div class="header-bar">
+        <h1>🚀 Fugth Founder AI</h1>
+        <div class="status-group"><div id="status-dot" title="Connecting..."></div><span id="ai-status">Connecting...</span></div>
+    </div>
+    <main class="main-workspace">
+        <div class="left-panel">
+            <h3>Input & Configuration</h3>
+            <div class="form-group" style="display:flex;flex-direction:column;flex-grow:1"><label for="project-idea">Project Idea</label><textarea id="project-idea" placeholder="Describe your project... e.g., A command-line tool in Python that fetches the weather for a city."></textarea></div>
+            <div class="form-group"><label for="project-name">Project Name</label><input type="text" id="project-name" placeholder="weather-cli"></div>
+            <button id="generate-btn" disabled>Generate Project</button>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="ai-status-container" class="flex items-center gap-2 text-sm">
-                <div id="ai-status-dot" class="w-3 h-3 bg-red-500 rounded-full transition-colors"></div>
-                <span id="ai-status-text">Connecting</span>
-            </div>
-            <div class="relative" id="download-container">
-                <button id="download-button" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    <span>Export</span>
-                </button>
-                <div id="download-list" class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg hidden">
-                    <a id="download-zip-button" href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">📦 Download as .zip</a>
-                </div>
-            </div>
+        <div class="main-content">
+            <pre id="code-editor">Your generated code will appear here...</pre>
         </div>
-    </header>
-
-    <main class="flex-grow flex overflow-hidden">
-        <aside class="w-[30%] max-w-sm bg-slate-800/30 p-4 flex flex-col border-r border-slate-700 overflow-y-auto">
-            <h2 class="text-lg font-semibold text-white mb-4">Configuration</h2>
-            <div class="mb-6">
-                <div class="flex border-b border-slate-600">
-                    <button id="tab-software" class="tab-button px-4 py-2 -mb-px text-sm font-semibold border-b-2 text-white" style="border-color: var(--accent-color);">💻 Software</button>
-                    <button id="tab-site" class="tab-button px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white">🌐 Website</button>
-                </div>
-            </div>
-            <div class="flex-grow flex flex-col space-y-6">
-                <div>
-                    <label for="project-idea" class="text-sm font-medium mb-2 block">Project Idea</label>
-                    <textarea id="project-idea" rows="6" class="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y" placeholder="e.g., A command-line calculator..."></textarea>
-                </div>
-                <div>
-                    <label for="code-verbosity" class="text-sm font-medium mb-2 block">Code Verbosity</label>
-                    <input id="code-verbosity" type="range" min="50" max="4000" value="200" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-                    <div class="text-xs text-slate-400 mt-1 flex justify-between">
-                        <span>Basic</span>
-                        <span id="verbosity-label" class="font-semibold text-sky-400">200 Lines</span>
-                        <span>Complex</span>
-                    </div>
-                </div>
-                <div>
-                    <label for="style-palette" class="text-sm font-medium mb-2">Coding Style</label>
-                    <select id="style-palette" class="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <option>Standard</option>
-                        <option>Academic/Verbose</option>
-                        <option>Minimalist & Efficient</option>
-                        <option>Enterprise-Grade (Classes & Modules)</option>
-                        <option>Beginner-Friendly (Heavy Comments)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mt-6">
-                <button id="generate-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50" disabled>
-                    ⚡ Generate Project
-                </button>
-            </div>
-        </aside>
-
-        <section class="flex-grow flex flex-col bg-slate-900">
-            <div class="flex flex-grow overflow-hidden">
-                <div class="w-1/3 max-w-xs bg-slate-800/50 p-4 border-r border-slate-700 overflow-y-auto">
-                    <h3 class="text-md font-semibold text-white mb-3">Project Structure</h3>
-                    <ul id="file-tree" class="text-sm space-y-1">
-                        <li class="text-slate-500">Generate a project to begin.</li>
-                    </ul>
-                </div>
-                <div class="flex-grow flex flex-col">
-                    <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
-                        <span id="current-file-name" class="text-sm font-medium text-white">No File Selected</span>
-                        <div class="flex items-center gap-4">
-                            <button id="refactor-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>✨ Refactor</button>
-                            <button id="test-gen-btn" class="text-slate-400 hover:text-white text-sm flex items-center gap-1.5 disabled:opacity-50" disabled>🧪 Generate Tests</button>
-                        </div>
-                    </div>
-                    <div id="code-editor-container" class="flex-grow bg-slate-900/80 overflow-auto">
-                        <div id="code-editor" contenteditable="true"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <aside class="w-[30%] max-w-sm bg-slate-800/30 p-4 flex flex-col border-l border-slate-700">
-            <h2 class="text-lg font-semibold text-white mb-4">AI Assistant Log</h2>
-            <div id="ai-log" class="flex-grow bg-slate-900/50 rounded-md p-3 overflow-y-auto text-xs space-y-3"></div>
-        </aside>
-
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const statusDot = document.getElementById('status-dot');
+        const aiStatus = document.getElementById('ai-status');
+        const generateBtn = document.getElementById('generate-btn');
+        const codeEditor = document.getElementById('code-editor');
+
+        // **THE FIX IS HERE**: Using the full URL for your Space
+        const API_URL = 'https://fugthchat-fugth-founder-ai.hf.space'; 
+        
+        async function checkServerStatus() {
+            try {
+                // We fetch the status from the root URL
+                const response = await fetch(API_URL + '/');
+                if (!response.ok) throw new Error(`Server offline or starting`);
+                
+                const data = await response.json();
+                aiStatus.textContent = data.message;
+
+                // If the message says the model is ready, we stop checking.
+                if (data.message.includes("ready")) {
+                    statusDot.style.backgroundColor = 'var(--green)';
+                    generateBtn.disabled = false;
+                    console.log("Backend is ready. Stopping status checks.");
+                } else {
+                    // If not ready, wait 5 seconds and try again.
+                    statusDot.style.backgroundColor = 'var(--yellow)';
+                    console.log("Backend is online, but model is loading. Checking again in 5s...");
+                    setTimeout(checkServerStatus, 5000);
+                }
+            } catch (error) {
+                // If the server isn't responding at all, wait and try again.
+                aiStatus.textContent = "Connection Failed. Retrying...";
+                statusDot.style.backgroundColor = 'var(--red)';
+                console.log("Connection failed. Retrying in 5s...");
+                setTimeout(checkServerStatus, 5000);
+            }
+        }
+        
+        async function generateCode() {
+            generateBtn.disabled = true;
+            codeEditor.textContent = 'AI is thinking...';
+            
+            const projectIdea = document.getElementById('project-idea').value;
+            const projectName = document.getElementById('project-name').value;
+
+            if (!projectIdea || !projectName) {
+                alert("Please provide both a Project Idea and a Project Name.");
+                generateBtn.disabled = false;
+                return;
+            }
+
+            const finalPrompt = `<|user|>\nGenerate a complete, functional software project based on the following idea:\n\nIdea: ${projectIdea}\nProject Name: ${projectName}\n\nProvide the full code for all necessary files.\n<|assistant|>\n`;
+
+            try {
+                // We use the full URL to call the /generate endpoint
+                const response = await fetch(`${API_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: finalPrompt })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                codeEditor.textContent = data.response;
+
+            } catch (error) {
+                codeEditor.textContent = `An error occurred: ${error.message}`;
+            } finally {
+                generateBtn.disabled = false;
+            }
+        }
+
+        generateBtn.addEventListener('click', generateCode);
+
+        // Start the first status check when the page loads.
+        checkServerStatus();
+    });
+    </script>
 </body>
 </html>
